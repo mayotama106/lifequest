@@ -697,6 +697,24 @@
   .q-tag{display:inline-block;transform:skewX(var(--unskew));margin-left:6px;background:#1c2a2c;color:var(--cyan);
     font-family:"Anton",sans-serif;font-style:italic;font-size:9px;padding:1px 7px;border:1px solid var(--cyan);}
   .quest.pending{border-color:var(--magenta);border-style:dashed;}
+  /* per-quest time log (E16) */
+  .q-time{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .q-time-lab{font-family:"Anton",sans-serif;font-style:italic;font-size:9px;color:var(--grey);}
+  .q-min{width:56px;background:#141414;border:2px solid #333;color:var(--white);font-weight:700;font-size:13px;padding:4px 6px;}
+  .q-min:focus{outline:none;border-color:var(--cyan);}
+  .q-log{cursor:pointer;border:2px solid var(--yellow);background:transparent;color:var(--yellow);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:11px;padding:4px 10px;}
+  .q-log:active{background:var(--yellow);color:var(--black);}
+  .q-mins{font-family:"Anton",sans-serif;font-style:italic;font-size:10px;color:var(--cyan);}
+  .quest.done .q-time{opacity:.7;}
+  /* quest tools row (toggle + drop inventory) */
+  .quest-tools{display:flex;align-items:center;gap:10px;padding:6px 20px 0;position:relative;z-index:2;}
+  .qt-btn{cursor:pointer;border:2px solid var(--grey);background:var(--black);color:#cfcfcf;
+    font-family:"Anton",sans-serif;font-style:italic;font-size:11px;padding:5px 12px;transform:skewX(var(--skew));}
+  .qt-btn span{display:inline-block;transform:skewX(var(--unskew));}
+  .qt-btn:active{background:#1a1a1a;}
+  .qt-inv{margin-left:auto;font-family:"Anton",sans-serif;font-style:italic;font-size:11px;color:var(--grey);}
+  .qt-inv b{color:var(--yellow);margin-left:6px;}
   .approve-btn{flex:0 0 auto;transform:skewX(var(--unskew));cursor:pointer;border:none;
     background:var(--magenta);color:var(--white);font-family:"Anton",sans-serif;font-style:italic;font-size:11px;
     padding:6px 10px;box-shadow:2px 2px 0 var(--black);align-self:center;}
@@ -772,6 +790,11 @@
       <h2>TODAY'S QUESTS</h2>
       <button class="add-quest-btn" id="addQuestBtn" type="button" aria-label="クエストを追加"><span>＋ ADD</span></button>
       <div class="cnt"><b><span id="remainCnt">0</span> LEFT</b></div>
+    </div>
+
+    <div class="quest-tools">
+      <button id="toggleDoneBtn" class="qt-btn" type="button">完了を非表示</button>
+      <span class="qt-inv">DROP 所持 <b>◇<span id="stoneCnt">0</span></b> <b>⬡<span id="runeCnt">0</span></b></span>
     </div>
 
     <div class="quests" id="questList"></div>
@@ -869,18 +892,7 @@
       <div class="gb-sub">編成して挑め。現実で鍛えた自分と仲間で、怠惰を討つ。</div>
     </div>
 
-    <div class="sec-head" style="margin-top:16px;"><h2 style="font-size:18px;">DUNGEON 探索</h2></div>
-    <div class="dungeon-box">
-      <div class="dg-lead">タスクに集中した時間を記録 ＝ ダンジョン探索。時間分のドロップを得る。</div>
-      <div class="dg-row">
-        <input id="dgMin" type="number" min="1" max="600" value="30" aria-label="集中した分">
-        <span class="dg-unit">分</span>
-        <button class="dg-go" id="exploreBtn" type="button"><span>探索する</span></button>
-      </div>
-      <div class="dg-inv">所持 ＞ <b>◇強化石 <span id="stoneCnt">0</span></b> ／ <b>⬡ルーン <span id="runeCnt">0</span></b></div>
-    </div>
-
-    <div class="sec-head" style="margin-top:20px;"><h2 style="font-size:18px;">強化 育成</h2></div>
+    <div class="sec-head" style="margin-top:16px;"><h2 style="font-size:18px;">強化 育成</h2></div>
     <div class="train-list" id="trainList"></div>
 
     <div class="sec-head" style="margin-top:20px;"><h2 style="font-size:18px;">TEAM 編成</h2></div>
@@ -1224,6 +1236,7 @@
   let streak = 0;                  // current consecutive achievement days
   let lastCompletionDate = null;   // "YYYY-MM-DD" of the latest day with >=1 completion
   let lastSeenDate = null;         // "YYYY-MM-DD" the app last ran daily rollover
+  let hideDone = false;            // E16: show/hide completed quests
 
   const SKILL_INFO = {
     "フロントエンド構築": "画面を一瞬で実体化させる、基本武装としての構築術。",
@@ -1271,12 +1284,12 @@
       team: team.slice(), clearedStages: Object.assign({}, clearedStages),
       stones, runes: runes.slice(), compLevel: Object.assign({}, compLevel),
       fusedIds: fusedIds.slice(),
-      streak, lastCompletionDate, lastSeenDate,
+      streak, lastCompletionDate, lastSeenDate, hideDone,
       skills: skills.slice(),
       quests: QUESTS.map(q=>({
         id:q.id, kind:q.kind, title:q.title, exp:q.exp,
         boss:!!q.boss, skill:q.skill, mat:!!q.mat, habit:!!q.habit, done:!!q.done,
-        tags:(q.tags||[]).slice(), intent:q.intent||"", pending:!!q.pending
+        tags:(q.tags||[]).slice(), intent:q.intent||"", pending:!!q.pending, minutes:q.minutes||0
       })),
     };
   }
@@ -1322,6 +1335,7 @@
     streak = Number.isFinite(s.streak) ? s.streak : 0;
     lastCompletionDate = typeof s.lastCompletionDate === "string" ? s.lastCompletionDate : null;
     lastSeenDate = typeof s.lastSeenDate === "string" ? s.lastSeenDate : null;
+    hideDone = !!s.hideDone;
     skills.length = 0;
     if(Array.isArray(s.skills)) s.skills.forEach(x=>{ if(typeof x==="string") skills.push(x); });
     // equipped techs (E10): keep only still-owned skills, cap at MAX_SKILL_SLOTS
@@ -1364,7 +1378,7 @@
     QUESTS = s.quests.map(q=>({
       id:q.id, kind:q.kind, title:q.title, exp:Number(q.exp)||0,
       boss:!!q.boss, skill:q.skill, mat:!!q.mat, habit:!!q.habit, done:!!q.done,
-      tags:Array.isArray(q.tags)?q.tags.filter(t=>typeof t==="string"):[], intent:q.intent||"", pending:!!q.pending
+      tags:Array.isArray(q.tags)?q.tags.filter(t=>typeof t==="string"):[], intent:q.intent||"", pending:!!q.pending, minutes:Number(q.minutes)||0
     }));
     _suspendSave = false;
   }
@@ -1472,11 +1486,18 @@
   const list = $("#questList");
   function questCardHtml(q){
     const tagChips = (q.tags||[]).map(t=>`<span class="q-tag">${esc(t)}</span>`).join("");
+    const total = q.minutes ? `<span class="q-mins">計${q.minutes}分</span>` : "";
     return `
       <div class="check"><div class="box"></div><div class="mark">✕</div></div>
       <div class="q-main">
         <div class="q-kind">${esc(q.kind)}${tagChips}</div>
         <div class="q-title">${esc(q.title)}</div>
+        <div class="q-time">
+          <span class="q-time-lab">⏱ かかった時間</span>
+          <input class="q-min" type="number" min="1" max="600" placeholder="分" aria-label="所要時間（分）">
+          <button class="q-log" type="button">記録</button>
+          ${total}
+        </div>
       </div>
       <div class="exp-tag">+${Number(q.exp)||0}<small> EXP</small></div>
       <div class="q-actions">
@@ -1489,6 +1510,11 @@
     el.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle(q.id);} });
     el.querySelector(".q-act.edit").addEventListener("click", e=>{ e.stopPropagation(); openQuestModal(q); });
     el.querySelector(".q-act.del").addEventListener("click", e=>{ e.stopPropagation(); deleteQuest(q.id); });
+    // E16: per-quest time log -> drops (don't let these trigger completion)
+    const min = el.querySelector(".q-min");
+    const log = el.querySelector(".q-log");
+    if(min){ ["click","keydown","mousedown"].forEach(ev=> min.addEventListener(ev, e=>e.stopPropagation())); }
+    if(log){ log.addEventListener("click", e=>{ e.stopPropagation(); logQuestTime(q.id, parseInt(min.value,10)); }); }
   }
   function renderQuests(){
     // INBOX: low-confidence / intent-less quests awaiting approval (S15-2)
@@ -1507,9 +1533,11 @@
         inbox.appendChild(el);
       });
     }
-    // main list (non-pending)
+    // main list (non-pending; optionally hide completed — E16)
+    const tgl = $("#toggleDoneBtn");
+    if(tgl) tgl.textContent = hideDone ? "完了を表示" : "完了を非表示";
     list.innerHTML = "";
-    QUESTS.filter(q=>!q.pending).forEach(q=>{
+    QUESTS.filter(q=>!q.pending && !(hideDone && q.done)).forEach(q=>{
       const el = document.createElement("div");
       el.className = "quest" + (q.boss?" boss":"") + (q.done?" done":"");
       el.setAttribute("role","button"); el.setAttribute("tabindex","0");
@@ -1993,16 +2021,27 @@
   btOv.addEventListener("click", ()=>{ if($("#btHint").style.display==="block") closeBattle(); });
 
   // ---------- E13: dungeon / leveling / runes ----------
-  function explore(minutes){
+  // drops scale with the minutes spent (the "dungeon run"); returns what was gained
+  function grantDrops(minutes){
     minutes = Math.max(1, Math.min(DUNGEON_CONFIG.maxMinutes, Math.floor(minutes)||0));
     const gainedStones = Math.max(1, Math.round(minutes / DUNGEON_CONFIG.stonePer));
     let gainedRunes = Math.floor(minutes / DUNGEON_CONFIG.runePer);
     if(Math.random() < (minutes % DUNGEON_CONFIG.runePer) / DUNGEON_CONFIG.runePer) gainedRunes++;
     stones += gainedStones;
     for(let i=0;i<gainedRunes;i++) runes.push(makeRune());
+    return { minutes, stones:gainedStones, runes:gainedRunes };
+  }
+  // E16: log time spent on a specific quest -> dungeon-style drops
+  function logQuestTime(id, minutes){
+    const q = QUESTS.find(x=>x.id===id);
+    if(!q) return;
+    minutes = Math.floor(minutes)||0;
+    if(minutes < 1){ toast("分を入力してください"); return; }
+    const g = grantDrops(minutes);
+    q.minutes = (q.minutes||0) + g.minutes;
     saveState();
-    renderDungeon(); renderTrain(); renderMainChar();
-    toast(`探索完了！ ◇${gainedStones}${gainedRunes?` ・ ⬡${gainedRunes}`:""} を獲得`);
+    renderQuests(); renderDungeon(); renderTrain(); renderMainChar();
+    toast(`${g.minutes}分を記録 → ◇${g.stones}${g.runes?` ・ ⬡${g.runes}`:""} 獲得`);
   }
   function levelUpCost(lv){ return lv * LEVEL_CONFIG.costMul; }
   function levelUpCompanion(defId){
@@ -2086,7 +2125,6 @@
     box.innerHTML = inv.map(r=>`<button class="rune-pick t-${r.type}" data-rune="${r.id}" type="button">⬡ ${r.type} +${r.value}</button>`).join("");
     box.querySelectorAll(".rune-pick").forEach(b=> b.addEventListener("click", ()=>equipRune(b.dataset.rune, runeTargetUnit)));
   }
-  $("#exploreBtn").addEventListener("click", ()=>explore(parseInt($("#dgMin").value,10)));
   $("#runeClose").addEventListener("click", closeRuneModal);
   runeModal.addEventListener("click", e=>{ if(e.target===runeModal) closeRuneModal(); });
 
@@ -2350,6 +2388,7 @@
     toast(editingId ? "クエストを更新した" : (pending ? "INBOXに追加（要確認）" : `自動分類: ${tags.join("/")||"未分類"} ・ +${exp}EXP`));
   });
 
+  $("#toggleDoneBtn").addEventListener("click", ()=>{ hideDone = !hideDone; saveState(); renderQuests(); });
   $("#addQuestBtn").addEventListener("click", ()=>openQuestModal(null));
   $("#modalCancel").addEventListener("click", closeQuestModal);
   questModal.addEventListener("click", e=>{ if(e.target===questModal) closeQuestModal(); });
@@ -2363,7 +2402,7 @@
     if(!window.confirm("進捗をすべて初期化します。よろしいですか？")) return;
     QUESTS = clone(DEFAULT_QUESTS);
     LV=7; EXP=0; totalExpEarned=0; crystals=0; skills.length=0; fusedIds.length=0; fusing=false;
-    streak=0; lastCompletionDate=null; lastSeenDate=todayStr();
+    streak=0; lastCompletionDate=null; lastSeenDate=todayStr(); hideDone=false;
     Object.keys(owned).forEach(k=>delete owned[k]); pity5=0; equipped=[];
     team=[null,null]; Object.keys(clearedStages).forEach(k=>delete clearedStages[k]);
     stones=0; runes=[]; Object.keys(compLevel).forEach(k=>delete compLevel[k]);
