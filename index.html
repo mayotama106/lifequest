@@ -458,9 +458,9 @@
   .newskill .nn{transform:skewX(var(--unskew));font-family:"Noto Sans JP",sans-serif;font-weight:900;font-size:34px;color:var(--yellow);line-height:1.05;margin:8px 0;}
   .newskill .ns{transform:skewX(var(--unskew));font-weight:900;font-size:12px;color:var(--white);}
 
-  /* toast */
+  /* toast — sits above the bottom dock (RESET / 統合) so it never overlaps it */
   .toast{
-    position:fixed;left:50%;bottom:104px;transform:translateX(-50%) translateY(140%) skewX(var(--skew));
+    position:fixed;left:50%;bottom:150px;transform:translateX(-50%) translateY(140%) skewX(var(--skew));
     background:var(--white);color:var(--black);font-family:"Anton",sans-serif;font-style:italic;font-size:15px;
     padding:10px 20px;box-shadow:5px 5px 0 var(--black);z-index:60;white-space:nowrap;
   }
@@ -1500,7 +1500,6 @@
       ? `<span class="q-done-badge">完了済</span>`
       : `<button class="q-done-btn" type="button">完了</button>`;
     return `
-      <div class="check" role="button" tabindex="0" aria-label="${q.done?'完了済':'完了にする'}"><div class="box"></div><div class="mark">✕</div></div>
       <div class="q-main">
         <div class="q-kind">${esc(q.kind)}${tagChips}</div>
         <div class="q-title">${esc(q.title)}</div>
@@ -1523,11 +1522,6 @@
     // tapping the card body no longer does anything (prevents misfires)
     const doneBtn = el.querySelector(".q-done-btn");
     if(doneBtn) doneBtn.addEventListener("click", e=>{ e.stopPropagation(); toggle(q.id); });
-    const check = el.querySelector(".check");
-    if(check){
-      check.addEventListener("click", e=>{ e.stopPropagation(); toggle(q.id); });
-      check.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(q.id); } });
-    }
     el.querySelector(".q-act.edit").addEventListener("click", e=>{ e.stopPropagation(); openQuestModal(q); });
     el.querySelector(".q-act.del").addEventListener("click", e=>{ e.stopPropagation(); deleteQuest(q.id); });
     // per-quest time log -> drops
