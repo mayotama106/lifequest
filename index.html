@@ -693,6 +693,21 @@
   .rune-pick.t-HP{border-color:#7dff7d;} .rune-pick.t-ATK{border-color:#ff5a3c;} .rune-pick.t-SPD{border-color:#00e5ff;}
   .rune-pick:active{background:#1a1a1a;}
 
+  /* ---------- auto-classification: tags / inbox / advanced (E15) ---------- */
+  .q-tag{display:inline-block;transform:skewX(var(--unskew));margin-left:6px;background:#1c2a2c;color:var(--cyan);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:9px;padding:1px 7px;border:1px solid var(--cyan);}
+  .quest.pending{border-color:var(--magenta);border-style:dashed;}
+  .approve-btn{flex:0 0 auto;transform:skewX(var(--unskew));cursor:pointer;border:none;
+    background:var(--magenta);color:var(--white);font-family:"Anton",sans-serif;font-style:italic;font-size:11px;
+    padding:6px 10px;box-shadow:2px 2px 0 var(--black);align-self:center;}
+  /* modal select + advanced disclosure */
+  .fld select{width:100%;background:#141414;border:2px solid #333;color:var(--white);
+    font-family:"Noto Sans JP",sans-serif;font-weight:700;font-size:15px;padding:10px 12px;}
+  .fld select:focus{outline:none;border-color:var(--cyan);}
+  .fld-adv{margin-bottom:14px;border:2px solid #2a2a2a;padding:0 10px;}
+  .fld-adv summary{cursor:pointer;font-family:"Anton",sans-serif;font-style:italic;font-size:12px;color:var(--cyan);padding:10px 0;}
+  .fld-adv[open] summary{margin-bottom:6px;}
+
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
   }
@@ -746,6 +761,12 @@
         <span>⚠ LIFEQUEST SYSTEM ⚠ 動け、宮川 ⚠ NO BLUR ⚠ SOLID ONLY ⚠ 即行動 ⚠&nbsp;</span>
       </div>
     </div>
+
+    <div class="sec-head" id="inboxSec" style="display:none;">
+      <h2 style="font-size:18px;color:var(--magenta)">INBOX ・ 未承認</h2>
+      <div class="cnt" style="background:var(--magenta);color:var(--white)"><b>要確認</b></div>
+    </div>
+    <div class="quests" id="inboxList"></div>
 
     <div class="sec-head">
       <h2>TODAY'S QUESTS</h2>
@@ -963,25 +984,38 @@
         <input id="fTitle" type="text" maxlength="60" autocomplete="off" placeholder="例：朝のストレッチを5分やる">
       </label>
       <label class="fld">
-        <span class="fld-lab">種別</span>
-        <input id="fKind" type="text" maxlength="24" autocomplete="off" placeholder="DAILY">
+        <span class="fld-lab">ざっくり意図 <i>任意</i></span>
+        <input id="fIntent" type="text" maxlength="40" autocomplete="off" placeholder="例：仕事 / ブログネタ / 思いつき（単語でOK）">
       </label>
       <label class="fld">
-        <span class="fld-lab">獲得EXP</span>
-        <input id="fExp" type="number" min="1" max="9999" value="30">
+        <span class="fld-lab">難易度</span>
+        <select id="fDiff">
+          <option value="auto">自動でおまかせ</option>
+          <option value="かんたん">かんたん</option>
+          <option value="ふつう">ふつう</option>
+          <option value="むずかしい">むずかしい</option>
+          <option value="特大">特大（ボス級）</option>
+        </select>
       </label>
-      <label class="fld chk">
-        <input id="fHabit" type="checkbox">
-        <span>習慣クエスト（毎日リセット）</span>
-      </label>
-      <label class="fld chk">
-        <input id="fBoss" type="checkbox">
-        <span>BOSS クエスト（討伐でスキル獲得）</span>
-      </label>
-      <label class="fld" id="fSkillWrap" style="display:none">
-        <span class="fld-lab">獲得スキル名 <i>必須</i></span>
-        <input id="fSkill" type="text" maxlength="30" autocomplete="off" placeholder="例：フロントエンド構築">
-      </label>
+      <details class="fld-adv">
+        <summary>詳細設定（任意）</summary>
+        <label class="fld">
+          <span class="fld-lab">種別（空欄で自動）</span>
+          <input id="fKind" type="text" maxlength="24" autocomplete="off" placeholder="自動">
+        </label>
+        <label class="fld chk">
+          <input id="fHabit" type="checkbox">
+          <span>習慣クエスト（毎日リセット）</span>
+        </label>
+        <label class="fld chk">
+          <input id="fBoss" type="checkbox">
+          <span>BOSS クエスト（討伐でスキル獲得）</span>
+        </label>
+        <label class="fld" id="fSkillWrap" style="display:none">
+          <span class="fld-lab">獲得スキル名 <i>必須</i></span>
+          <input id="fSkill" type="text" maxlength="30" autocomplete="off" placeholder="例：フロントエンド構築">
+        </label>
+      </details>
       <div class="modal-actions">
         <button type="button" class="btn modal-cancel" id="modalCancel"><span>やめる</span></button>
         <button type="submit" class="btn modal-save"><span id="modalSaveLabel">登録</span></button>
@@ -1241,7 +1275,8 @@
       skills: skills.slice(),
       quests: QUESTS.map(q=>({
         id:q.id, kind:q.kind, title:q.title, exp:q.exp,
-        boss:!!q.boss, skill:q.skill, mat:!!q.mat, habit:!!q.habit, done:!!q.done
+        boss:!!q.boss, skill:q.skill, mat:!!q.mat, habit:!!q.habit, done:!!q.done,
+        tags:(q.tags||[]).slice(), intent:q.intent||"", pending:!!q.pending
       })),
     };
   }
@@ -1328,7 +1363,8 @@
     runes.forEach(r=>{ if(r.equippedTo && r.equippedTo!=="main" && !owned[r.equippedTo]) r.equippedTo = null; });
     QUESTS = s.quests.map(q=>({
       id:q.id, kind:q.kind, title:q.title, exp:Number(q.exp)||0,
-      boss:!!q.boss, skill:q.skill, mat:!!q.mat, habit:!!q.habit, done:!!q.done
+      boss:!!q.boss, skill:q.skill, mat:!!q.mat, habit:!!q.habit, done:!!q.done,
+      tags:Array.isArray(q.tags)?q.tags.filter(t=>typeof t==="string"):[], intent:q.intent||"", pending:!!q.pending
     }));
     _suspendSave = false;
   }
@@ -1381,36 +1417,118 @@
     if(el) el.textContent = streak;
   }
 
+  // ---------- E15: task auto-classification (pluggable) ----------
+  // seed categories + keyword cues; the live ontology also includes any tag already in use
+  const TAG_ONTOLOGY = {
+    "運動": ["運動","ストレッチ","筋トレ","ラン","ジョギング","歩","散歩","ジム","トレーニング","ヨガ","腹筋"],
+    "学習": ["勉強","学習","読書","本","過去問","資格","英語","講座","ノート","暗記","復習","勉強会"],
+    "仕事": ["メール","資料","会議","報告","提出","レビュー","対応","連絡","見積","事務"],
+    "開発": ["実装","コード","api","ui","db","バグ","設計","リファクタ","デプロイ","テスト","開発","画面"],
+    "家事": ["掃除","片付け","洗濯","料理","買い物","ゴミ","整理","机","部屋"],
+    "健康": ["睡眠","水","食事","休憩","瞑想","体重","早寝","早起き"],
+  };
+  const DIFFICULTY_EXP = { "かんたん":10, "ふつう":30, "むずかしい":80, "特大":200 };
+  const CLASSIFY_CONFIG = { defaultDifficulty:"ふつう", lowConfidence:0.34 };
+
+  // dynamic ontology = seed categories + tags already used on quests
+  function ontologyTags(){
+    const set = new Set(Object.keys(TAG_ONTOLOGY));
+    QUESTS.forEach(q => (q.tags||[]).forEach(t => set.add(t)));
+    return [...set];
+  }
+  // pluggable entry point — swap ruleClassify() for WebLLM / Ollama / Claude later
+  function classifyTask(text, intent){ return ruleClassify(text, intent); }
+  function ruleClassify(text, intent){
+    const hay = `${text||""} ${intent||""}`.toLowerCase();
+    const scores = {};
+    Object.keys(TAG_ONTOLOGY).forEach(cat=>{
+      let s = 0; TAG_ONTOLOGY[cat].forEach(kw=>{ if(hay.includes(kw.toLowerCase())) s++; });
+      if(s>0) scores[cat] = s;
+    });
+    // intent that matches an existing tag boosts it (route to existing, don't invent)
+    if(intent){
+      const it = intent.toLowerCase();
+      ontologyTags().forEach(t=>{ const tl=t.toLowerCase(); if(it.includes(tl)||tl.includes(it)) scores[t]=(scores[t]||0)+2; });
+    }
+    let tags = Object.keys(scores).sort((a,b)=>scores[b]-scores[a]);
+    let confidence;
+    if(tags.length===0){
+      // unknown concept: allow at most ONE new tag from the intent (tag-explosion guard)
+      const newTag = (intent||"").trim().split(/\s+/)[0];
+      tags = newTag ? [newTag.slice(0,12)] : [];
+      confidence = newTag ? 0.3 : 0.1;
+    }else{
+      tags = tags.slice(0,2);
+      confidence = Math.min(1, 0.4 + scores[tags[0]]*0.2);
+    }
+    // EXP from difficulty cues, else default
+    let difficulty = CLASSIFY_CONFIG.defaultDifficulty;
+    if(/(資格|試験|設計|実装|完成|やりきる|まとめる|レポート|プレゼン|一気|徹底)/.test(hay)) difficulty = "むずかしい";
+    if(/(5分|ちょっと|軽く|サッと|すぐ|少し)/.test(hay)) difficulty = "かんたん";
+    return { exp: DIFFICULTY_EXP[difficulty], tags, confidence, difficulty };
+  }
+
   // ---------- render quests ----------
   const list = $("#questList");
+  function questCardHtml(q){
+    const tagChips = (q.tags||[]).map(t=>`<span class="q-tag">${esc(t)}</span>`).join("");
+    return `
+      <div class="check"><div class="box"></div><div class="mark">✕</div></div>
+      <div class="q-main">
+        <div class="q-kind">${esc(q.kind)}${tagChips}</div>
+        <div class="q-title">${esc(q.title)}</div>
+      </div>
+      <div class="exp-tag">+${Number(q.exp)||0}<small> EXP</small></div>
+      <div class="q-actions">
+        <button class="q-act edit" type="button" aria-label="編集">✎</button>
+        <button class="q-act del" type="button" aria-label="削除">🗑</button>
+      </div>`;
+  }
+  function wireQuestCard(el, q){
+    el.addEventListener("click", ()=>toggle(q.id));
+    el.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle(q.id);} });
+    el.querySelector(".q-act.edit").addEventListener("click", e=>{ e.stopPropagation(); openQuestModal(q); });
+    el.querySelector(".q-act.del").addEventListener("click", e=>{ e.stopPropagation(); deleteQuest(q.id); });
+  }
   function renderQuests(){
+    // INBOX: low-confidence / intent-less quests awaiting approval (S15-2)
+    const inbox = $("#inboxList");
+    const pending = QUESTS.filter(q=>q.pending);
+    $("#inboxSec").style.display = pending.length ? "block" : "none";
+    if(inbox){
+      inbox.innerHTML = "";
+      pending.forEach(q=>{
+        const el = document.createElement("div");
+        el.className = "quest pending" + (q.done?" done":"");
+        el.setAttribute("role","button"); el.setAttribute("tabindex","0"); el.dataset.id = q.id;
+        el.innerHTML = questCardHtml(q) + `<button class="approve-btn" type="button">承認</button>`;
+        wireQuestCard(el, q);
+        el.querySelector(".approve-btn").addEventListener("click", e=>{ e.stopPropagation(); approveQuest(q.id); });
+        inbox.appendChild(el);
+      });
+    }
+    // main list (non-pending)
     list.innerHTML = "";
-    QUESTS.forEach(q=>{
+    QUESTS.filter(q=>!q.pending).forEach(q=>{
       const el = document.createElement("div");
       el.className = "quest" + (q.boss?" boss":"") + (q.done?" done":"");
-      el.setAttribute("role","button");
-      el.setAttribute("tabindex","0");
+      el.setAttribute("role","button"); el.setAttribute("tabindex","0");
       el.setAttribute("aria-pressed", q.done?"true":"false");
       el.dataset.id = q.id;
-      el.innerHTML = `
-        <div class="check"><div class="box"></div><div class="mark">✕</div></div>
-        <div class="q-main">
-          <div class="q-kind">${esc(q.kind)}</div>
-          <div class="q-title">${esc(q.title)}</div>
-        </div>
-        <div class="exp-tag">+${Number(q.exp)||0}<small> EXP</small></div>
-        <div class="q-actions">
-          <button class="q-act edit" type="button" aria-label="編集">✎</button>
-          <button class="q-act del" type="button" aria-label="削除">🗑</button>
-        </div>`;
-      el.addEventListener("click", ()=>toggle(q.id));
-      el.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle(q.id);} });
-      // edit / delete must not trigger completion (S2-2)
-      el.querySelector(".q-act.edit").addEventListener("click", e=>{ e.stopPropagation(); openQuestModal(q); });
-      el.querySelector(".q-act.del").addEventListener("click", e=>{ e.stopPropagation(); deleteQuest(q.id); });
+      el.innerHTML = questCardHtml(q);
+      wireQuestCard(el, q);
       list.appendChild(el);
     });
     updateCounts();
+  }
+
+  function approveQuest(id){
+    const q = QUESTS.find(x=>x.id===id);
+    if(!q) return;
+    q.pending = false;
+    saveState();
+    renderQuests();
+    toast("クエストを承認した");
   }
 
   function updateCounts(){
@@ -2149,7 +2267,8 @@
   // ---------- quest editor modal (S2-1) ----------
   const questModal = $("#questModal");
   const questForm  = $("#questForm");
-  const fTitle = $("#fTitle"), fKind = $("#fKind"), fExp = $("#fExp");
+  const fTitle = $("#fTitle"), fKind = $("#fKind");
+  const fIntent = $("#fIntent"), fDiff = $("#fDiff");
   const fBoss = $("#fBoss"), fSkill = $("#fSkill"), fSkillWrap = $("#fSkillWrap");
   const fHabit = $("#fHabit");
   let editingId = null;   // null = add mode; id = edit mode (used by S2-2)
@@ -2167,8 +2286,9 @@
     $("#modalTitle").textContent = quest ? "EDIT QUEST" : "NEW QUEST";
     $("#modalSaveLabel").textContent = quest ? "更新" : "登録";
     fTitle.value = quest ? quest.title : "";
-    fKind.value  = quest ? quest.kind  : "DAILY";
-    fExp.value   = quest ? quest.exp   : 30;
+    fIntent.value= quest && quest.intent ? quest.intent : "";
+    fKind.value  = quest ? quest.kind  : "";
+    fDiff.value  = "auto";
     fBoss.checked= quest ? !!quest.boss : false;
     fHabit.checked= quest ? !!quest.habit : false;
     fSkill.value = quest && quest.skill ? quest.skill : "";
@@ -2201,26 +2321,33 @@
     const boss = fBoss.checked;
     let skill = fSkill.value.trim();
     if(boss && !skill){ fSkill.classList.add("invalid"); fSkill.focus(); return; }
-    let exp = parseInt(fExp.value, 10);
-    if(!Number.isFinite(exp) || exp < 1) exp = 1;
-    if(exp > 9999) exp = 9999;
     const habit = fHabit.checked;
-    const kind = fKind.value.trim() || (boss ? "BOSS" : "DAILY");
+    const intent = fIntent.value.trim();
+
+    // E15: auto-classify (EXP + tags) from title + intent
+    const cls = classifyTask(title, intent);
+    // difficulty override beats auto EXP
+    let exp = cls.exp;
+    if(fDiff.value !== "auto" && DIFFICULTY_EXP[fDiff.value] != null) exp = DIFFICULTY_EXP[fDiff.value];
+    if(boss) exp = Math.max(exp, DIFFICULTY_EXP["特大"]);   // boss quests are big
+    const tags = cls.tags;
+    const kind = fKind.value.trim() || (boss ? "BOSS" : (tags[0] || "DAILY"));
+    // low confidence or no intent -> hold in INBOX for one-tap approval (editing keeps prior state)
+    const pending = !editingId && (!intent || cls.confidence < CLASSIFY_CONFIG.lowConfidence);
 
     if(editingId){
-      // edit mode (wired in S2-2)
       const q = QUESTS.find(x=>x.id===editingId);
-      if(q){ q.title=title; q.kind=kind; q.exp=exp; q.boss=boss; q.skill=boss?skill:undefined; q.habit=habit; }
+      if(q){ q.title=title; q.intent=intent; q.kind=kind; q.exp=exp; q.boss=boss; q.skill=boss?skill:undefined; q.habit=habit; q.tags=tags; }
     }else{
       QUESTS.push({
-        id:genQuestId(), kind, title, exp,
-        boss, skill: boss ? skill : undefined, mat:false, habit, done:false
+        id:genQuestId(), kind, title, intent, exp, tags,
+        boss, skill: boss ? skill : undefined, mat:false, habit, done:false, pending
       });
     }
     saveState();
     renderQuests(); renderStatus();
     closeQuestModal();
-    toast(editingId ? "クエストを更新した" : "クエストを追加した");
+    toast(editingId ? "クエストを更新した" : (pending ? "INBOXに追加（要確認）" : `自動分類: ${tags.join("/")||"未分類"} ・ +${exp}EXP`));
   });
 
   $("#addQuestBtn").addEventListener("click", ()=>openQuestModal(null));

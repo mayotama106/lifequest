@@ -344,6 +344,59 @@ section("dungeon / leveling / runes");
   A(runes.every(r => r.equippedTo === null), "runes freed when companion not owned");
 }
 
+/* ============ 4h. タスク自動分類 (E15) ============ */
+section("auto-classification");
+{
+  const TAG_ONTOLOGY = {
+    "運動": ["ストレッチ", "筋トレ", "ラン"],
+    "学習": ["勉強", "読書", "過去問"],
+    "開発": ["実装", "api", "設計", "バグ"],
+  };
+  const DIFFICULTY_EXP = { "かんたん": 10, "ふつう": 30, "むずかしい": 80, "特大": 200 };
+  const CFG = { defaultDifficulty: "ふつう", lowConfidence: 0.34 };
+  const usedTags = ["ブログ"]; // simulate a tag already in the ontology
+  const ontologyTags = () => [...new Set([...Object.keys(TAG_ONTOLOGY), ...usedTags])];
+
+  function ruleClassify(text, intent) {
+    const hay = `${text || ""} ${intent || ""}`.toLowerCase();
+    const scores = {};
+    Object.keys(TAG_ONTOLOGY).forEach(cat => { let s = 0; TAG_ONTOLOGY[cat].forEach(kw => { if (hay.includes(kw.toLowerCase())) s++; }); if (s > 0) scores[cat] = s; });
+    if (intent) { const it = intent.toLowerCase(); ontologyTags().forEach(t => { const tl = t.toLowerCase(); if (it.includes(tl) || tl.includes(it)) scores[t] = (scores[t] || 0) + 2; }); }
+    let tags = Object.keys(scores).sort((a, b) => scores[b] - scores[a]);
+    let confidence;
+    if (tags.length === 0) { const n = (intent || "").trim().split(/\s+/)[0]; tags = n ? [n.slice(0, 12)] : []; confidence = n ? 0.3 : 0.1; }
+    else { tags = tags.slice(0, 2); confidence = Math.min(1, 0.4 + scores[tags[0]] * 0.2); }
+    let difficulty = CFG.defaultDifficulty;
+    if (/(資格|試験|設計|実装|完成)/.test(hay)) difficulty = "むずかしい";
+    if (/(5分|軽く|サッと)/.test(hay)) difficulty = "かんたん";
+    return { exp: DIFFICULTY_EXP[difficulty], tags, confidence, difficulty };
+  }
+
+  let r = ruleClassify("朝のストレッチを5分やる", "");
+  A(r.tags[0] === "運動" && r.exp === 10, "keyword->運動, 5分->かんたん EXP10");
+  r = ruleClassify("認証APIを実装する", "開発");
+  A(r.tags.includes("開発") && r.exp === 80, "開発 routed + 実装->むずかしい EXP80");
+  A(r.confidence >= 0.34, "matched tag -> confident");
+
+  // route to an EXISTING tag rather than inventing a new one
+  r = ruleClassify("記事の構成を考える", "ブログ");
+  A(r.tags.includes("ブログ"), "intent routes to existing ontology tag");
+
+  // unknown concept -> at most ONE new tag, low confidence
+  r = ruleClassify("謎の用事", "占い");
+  A(r.tags.length === 1 && r.tags[0] === "占い", "unknown -> single new tag (no explosion)");
+  A(r.confidence < CFG.lowConfidence, "unknown -> low confidence (goes to Inbox)");
+
+  // no intent + no keyword -> low confidence -> Inbox
+  r = ruleClassify("あれをやる", "");
+  A(r.confidence < CFG.lowConfidence, "no intent/keyword -> Inbox");
+
+  // pending rule
+  const isPending = (intent, conf) => (!intent || conf < CFG.lowConfidence);
+  A(isPending("", 0.9) === true, "empty intent -> pending");
+  A(isPending("開発", 0.6) === false, "intent + confident -> not pending");
+}
+
 /* ============ 5. HTMLエスケープ (S6-1) ============ */
 section("html escape");
 {
