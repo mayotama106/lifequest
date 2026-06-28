@@ -198,6 +198,39 @@ section("gacha");
   A(Object.keys(applyOwned({})).length === 0, "missing owned -> empty (legacy save)");
 }
 
+/* ============ 4d. メインキャラ & スキル→技 (E10) ============ */
+section("main character & skill->tech");
+{
+  const MC = { hpBase: 500, hpPerLv: 120, atkBase: 80, atkPerLv: 14, spd: 100 };
+  const stats = lv => ({ level: lv, hp: MC.hpBase + lv * MC.hpPerLv, atk: MC.atkBase + lv * MC.atkPerLv, spd: MC.spd });
+  A(stats(7).hp === 1340 && stats(7).atk === 178 && stats(7).spd === 100, "LV7 stats derived");
+  A(stats(8).hp === stats(7).hp + 120, "stats scale with level");
+
+  const SKILL_BATTLE = { "フロントエンド構築": { power: 120, cooldown: 2, element: "風", effect: "x" } };
+  const FUSED_BATTLE = { "フルスタック開発者": { power: 320, cooldown: 4, element: "光", effect: "y" } };
+  let fusedIds = ["フルスタック開発者"];
+  const skillTech = name => {
+    if (fusedIds.includes(name)) { const b = FUSED_BATTLE[name] || { power: 300, cooldown: 4, element: "光", effect: "必殺" }; return Object.assign({ name, kind: "fused" }, b); }
+    const b = SKILL_BATTLE[name] || { power: 100, cooldown: 2, element: "無", effect: "基本" }; return Object.assign({ name, kind: "unique" }, b);
+  };
+  A(skillTech("フロントエンド構築").kind === "unique" && skillTech("フロントエンド構築").power === 120, "known unique -> tech");
+  A(skillTech("フルスタック開発者").kind === "fused" && skillTech("フルスタック開発者").power === 320, "fused -> ultimate tech");
+  A(skillTech("謎スキル").power === 100 && skillTech("謎スキル").element === "無", "unknown skill -> fallback tech");
+
+  // equip cap
+  const MAX = 4; let equipped = [];
+  const toggleEquip = name => { const i = equipped.indexOf(name); if (i >= 0) equipped.splice(i, 1); else { if (equipped.length >= MAX) return false; equipped.push(name); } return true; };
+  ["a", "b", "c", "d"].forEach(toggleEquip);
+  A(equipped.length === 4, "can equip up to 4");
+  A(toggleEquip("e") === false && equipped.length === 4, "5th equip rejected");
+  toggleEquip("a"); A(equipped.length === 3 && !equipped.includes("a"), "unequip frees a slot");
+
+  // load validation: drop equipped not owned, cap at MAX
+  const validate = (saved, ownedNames) => { const out = []; saved.forEach(x => { if (ownedNames.includes(x) && !out.includes(x) && out.length < MAX) out.push(x); }); return out; };
+  A(JSON.stringify(validate(["x", "y", "z"], ["x", "z"])) === JSON.stringify(["x", "z"]), "drops unowned equipped on load");
+  A(validate(["a", "a", "a", "a", "a", "a"], ["a"]).length === 1, "dedupe + cap on load");
+}
+
 /* ============ 5. HTMLエスケープ (S6-1) ============ */
 section("html escape");
 {

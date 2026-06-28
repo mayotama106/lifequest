@@ -247,6 +247,40 @@
   .sb-rank span{display:inline-block;transform:skewX(var(--unskew));}
   .sb-desc{margin-top:12px;font-size:12px;color:var(--grey);font-weight:700;line-height:1.6;max-width:300px;}
 
+  /* main character & tech slots (E10) */
+  .mainchar-sec{padding-top:26px;position:relative;z-index:2;}
+  /* square card (no skew) so the full-width stat boxes / slots never poke past the border */
+  .mc-card{margin:0 20px;background:#101010;border:2px solid var(--cyan);box-shadow:5px 5px 0 var(--black);padding:14px 16px;}
+  .mc-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .mc-name{font-weight:900;font-size:16px;color:var(--white);}
+  .mc-lv{font-family:"Anton",sans-serif;font-style:italic;font-size:13px;color:var(--cyan);}
+  .mc-lv b{font-size:18px;color:var(--yellow);}
+  .mc-stats{display:flex;gap:10px;margin-bottom:14px;}
+  .mc-stat{flex:1;background:var(--black);border:2px solid #2a2a2a;padding:6px 4px;text-align:center;}
+  .mc-stat .k{display:block;font-family:"Anton",sans-serif;font-style:italic;font-size:10px;color:var(--grey);}
+  .mc-stat .v{display:block;font-family:"Anton",sans-serif;font-style:italic;font-size:18px;color:var(--white);}
+  .mc-slots-lab{display:flex;justify-content:space-between;align-items:center;font-family:"Anton",sans-serif;font-style:italic;font-size:11px;color:var(--cyan);margin-bottom:8px;}
+  .mc-slots{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+  .slot{border:2px solid #2a2a2a;background:var(--black);padding:8px 10px;min-height:54px;}
+  .slot.filled{border-color:var(--cyan);}
+  .slot.filled.ult{border-color:var(--yellow);background:#141000;}
+  .slot.empty{border-style:dashed;color:var(--grey);}
+  .slot-k{display:block;font-family:"Anton",sans-serif;font-style:italic;font-size:9px;color:var(--cyan);}
+  .slot.ult .slot-k{color:var(--yellow);}
+  .slot.empty .slot-k{color:var(--grey);}
+  .slot-nm{display:block;font-weight:900;font-size:12px;color:var(--white);line-height:1.2;margin:2px 0;word-break:break-word;}
+  .slot.empty .slot-nm{color:var(--grey);font-weight:700;}
+  .slot-st{display:block;font-family:"Anton",sans-serif;font-style:italic;font-size:9px;color:#9a9a9a;}
+
+  /* skill chip tech line + equip button (E10) */
+  .skill-chip .tech{display:block;transform:skewX(var(--unskew));font-family:"Anton",sans-serif;font-style:italic;font-size:10px;color:var(--cyan);margin-top:8px;}
+  .skill-chip.fused .tech{color:var(--yellow);}
+  .equip-btn{display:inline-block;transform:skewX(var(--unskew));margin-top:8px;cursor:pointer;
+    background:transparent;border:2px solid var(--cyan);color:var(--cyan);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:11px;padding:5px 12px;transition:background .15s ease,color .15s ease;}
+  .equip-btn:active{background:var(--cyan);color:var(--black);}
+  .equip-btn.on{background:var(--magenta);border-color:var(--magenta);color:var(--white);}
+
   .attr-sec{padding-top:24px;position:relative;z-index:2;}
   .attr-list{padding:0 20px;display:flex;flex-direction:column;gap:16px;}
   .attr-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
@@ -625,6 +659,23 @@
       <div class="sb-desc" id="rankDesc">まだ何も成し遂げていない。最初の一歩を踏み出せ。</div>
     </div>
 
+    <div class="mainchar-sec">
+      <div class="sec-head" style="margin-bottom:10px;">
+        <h2 style="font-size:18px;">MAIN CHARACTER</h2>
+        <div class="cnt" style="background:var(--magenta);color:var(--white)"><b>YOU</b></div>
+      </div>
+      <div class="mc-card">
+        <div class="mc-top"><span class="mc-name">自分（あなた）</span><span class="mc-lv">LV <b id="mcLv">7</b></span></div>
+        <div class="mc-stats">
+          <div class="mc-stat"><span class="k">HP</span><span class="v" id="mcHp">0</span></div>
+          <div class="mc-stat"><span class="k">ATK</span><span class="v" id="mcAtk">0</span></div>
+          <div class="mc-stat"><span class="k">SPD</span><span class="v" id="mcSpd">0</span></div>
+        </div>
+        <div class="mc-slots-lab">技スロット（獲得スキルを装備）<span id="slotCnt">0/4</span></div>
+        <div class="mc-slots" id="mcSlots"></div>
+      </div>
+    </div>
+
     <div class="attr-sec">
       <div class="sec-head" style="margin-bottom:10px;">
         <h2 style="font-size:18px;">ATTRIBUTES</h2>
@@ -846,6 +897,41 @@
   const owned = {};   // { defId: count }
   let pity5 = 0;      // pulls since last ★5
 
+  // ---------- main character & skill->tech (E10) ----------
+  // main char stats derive from the user's LV (synced with PROGRESS.level)
+  const MAINCHAR_CONFIG = { hpBase:500, hpPerLv:120, atkBase:80, atkPerLv:14, spd:100 };
+  function mainCharStats(){
+    return {
+      level: LV,
+      hp: MAINCHAR_CONFIG.hpBase + LV*MAINCHAR_CONFIG.hpPerLv,
+      atk: MAINCHAR_CONFIG.atkBase + LV*MAINCHAR_CONFIG.atkPerLv,
+      spd: MAINCHAR_CONFIG.spd,
+    };
+  }
+  // battle stats per skill name (data-driven). unique = normal tech, fused = ultimate.
+  const SKILL_BATTLE = {
+    "フロントエンド構築": { power:120, cooldown:2, element:"風", effect:"単体に素早い一撃" },
+    "バックエンド構築":   { power:100, cooldown:2, element:"水", effect:"味方を守る盾" },
+    "データベース設計":   { power:110, cooldown:3, element:"土", effect:"敵全体に小ダメージ" },
+    "高速タスク処理":     { power:140, cooldown:3, element:"火", effect:"連続攻撃" },
+  };
+  const FUSED_BATTLE = {
+    "フルスタック開発者": { power:320, cooldown:4, element:"光", effect:"全体大ダメージ＆自己強化" },
+  };
+  function skillTech(name){
+    if(fusedIds.includes(name)){
+      const b = FUSED_BATTLE[name] || { power:300, cooldown:4, element:"光", effect:"必殺技" };
+      return Object.assign({ name, kind:"fused" }, b);
+    }
+    const b = SKILL_BATTLE[name] || { power:100, cooldown:2, element:"無", effect:"基本攻撃" };
+    return Object.assign({ name, kind:"unique" }, b);
+  }
+  const MAX_SKILL_SLOTS = 4;
+  let equipped = [];   // equipped skill names (max MAX_SKILL_SLOTS)
+  const isEquipped = name => equipped.includes(name);
+  // all skill names the player owns (unique + fused), for equip eligibility
+  const allSkillNames = () => skills.concat(fusedIds);
+
   let LV = 7;
   let EXP = 0;
   const skills = [];          // acquired skill names
@@ -899,6 +985,7 @@
       version: STATE_VERSION,
       LV, EXP, totalExpEarned, crystals,
       owned: Object.assign({}, owned), pity5,
+      equipped: equipped.slice(),
       fusedIds: fusedIds.slice(),
       streak, lastCompletionDate, lastSeenDate,
       skills: skills.slice(),
@@ -952,6 +1039,12 @@
     lastSeenDate = typeof s.lastSeenDate === "string" ? s.lastSeenDate : null;
     skills.length = 0;
     if(Array.isArray(s.skills)) s.skills.forEach(x=>{ if(typeof x==="string") skills.push(x); });
+    // equipped techs (E10): keep only still-owned skills, cap at MAX_SKILL_SLOTS
+    equipped = [];
+    if(Array.isArray(s.equipped)){
+      const ownedNames = skills.concat(fusedIds);
+      s.equipped.forEach(x=>{ if(typeof x==="string" && ownedNames.includes(x) && !equipped.includes(x) && equipped.length<MAX_SKILL_SLOTS) equipped.push(x); });
+    }
     QUESTS = s.quests.map(q=>({
       id:q.id, kind:q.kind, title:q.title, exp:Number(q.exp)||0,
       boss:!!q.boss, skill:q.skill, mat:!!q.mat, habit:!!q.habit, done:!!q.done
@@ -1208,8 +1301,10 @@
       // grant skill
       if(!skills.includes(q.skill)){
         skills.push(q.skill);
+        autoEquip(q.skill);    // E10: auto-equip if a slot is free
         renderSkills();
         checkFuseReady();
+        renderMainChar();
       }
       // 5.1 cut-in
       setTimeout(()=>playCutIn(q.skill), reduce?0:260);
@@ -1229,22 +1324,77 @@
       return;
     }
     grid.innerHTML = "";
+    // tech stats line + equip button shared by all chips (E10)
+    const techMarkup = name => {
+      const t = skillTech(name);
+      const on = isEquipped(name);
+      return `<span class="tech">⚔ 威力${t.power} / CT${t.cooldown} / ${esc(t.element)}・${esc(t.effect)}</span>`
+        + `<button class="equip-btn${on?" on":""}" data-skill="${esc(name)}" type="button">${on?"装備中 ✕":"技に装備"}</button>`;
+    };
+    const wireEquip = (chip, name) => {
+      const b = chip.querySelector(".equip-btn");
+      if(b) b.addEventListener("click", ()=>toggleEquip(name));
+    };
     // evolved skills first
     fusedIds.forEach(name=>{
       const r = FUSE_RECIPES.find(x=>x.result===name);
       const c = document.createElement("div");
       c.className="skill-chip fused";
-      c.innerHTML = `<span class="lb">★ EVOLVED SKILL</span><span class="nm">${esc(name)}</span><span class="desc">${esc(r?r.desc:"")}</span>`;
+      c.innerHTML = `<span class="lb">★ EVOLVED SKILL（必殺）</span><span class="nm">${esc(name)}</span><span class="desc">${esc(r?r.desc:"")}</span>${techMarkup(name)}`;
+      wireEquip(c, name);
       grid.appendChild(c);
     });
     skills.forEach(s=>{
       const consumed = isConsumed(s);
       const c = document.createElement("div");
       c.className = "skill-chip" + (consumed ? " consumed" : "");
-      c.innerHTML = `<span class="lb">${consumed?"USED ▶ FUSED":"UNIQUE SKILL"}</span><span class="nm">${esc(s)}</span><span class="desc">${esc(SKILL_INFO[s]||"")}</span>`;
+      c.innerHTML = `<span class="lb">${consumed?"USED ▶ FUSED":"UNIQUE SKILL"}</span><span class="nm">${esc(s)}</span><span class="desc">${esc(SKILL_INFO[s]||"")}</span>${techMarkup(s)}`;
+      wireEquip(c, s);
       grid.appendChild(c);
     });
     renderStatus();
+  }
+
+  // ---------- equip / main character (E10) ----------
+  function toggleEquip(name){
+    const i = equipped.indexOf(name);
+    if(i >= 0){ equipped.splice(i,1); }
+    else {
+      if(equipped.length >= MAX_SKILL_SLOTS){ toast("技スロットが満杯（最大4）"); return; }
+      equipped.push(name);
+    }
+    saveState();
+    renderSkills();      // refresh equip buttons
+    renderMainChar();
+  }
+  // auto-equip a newly acquired skill if a slot is free
+  function autoEquip(name){
+    if(!isEquipped(name) && equipped.length < MAX_SKILL_SLOTS){ equipped.push(name); }
+  }
+  function renderMainChar(){
+    const lvEl = $("#mcLv"); if(!lvEl) return;
+    const st = mainCharStats();
+    lvEl.textContent = st.level;
+    $("#mcHp").textContent = st.hp;
+    $("#mcAtk").textContent = st.atk;
+    $("#mcSpd").textContent = st.spd;
+    $("#slotCnt").textContent = `${equipped.length}/${MAX_SKILL_SLOTS}`;
+    const wrap = $("#mcSlots");
+    let html = "";
+    for(let i=0;i<MAX_SKILL_SLOTS;i++){
+      const name = equipped[i];
+      if(name){
+        const t = skillTech(name);
+        html += `<div class="slot filled ${t.kind==="fused"?"ult":""}">
+          <span class="slot-k">${t.kind==="fused"?"必殺":"技"} ${i+1}</span>
+          <span class="slot-nm">${esc(name)}</span>
+          <span class="slot-st">威力${t.power} / CT${t.cooldown} / ${esc(t.element)}</span>
+        </div>`;
+      }else{
+        html += `<div class="slot empty"><span class="slot-k">技 ${i+1}</span><span class="slot-nm">― 空き ―</span></div>`;
+      }
+    }
+    wrap.innerHTML = html;
   }
 
   function checkFuseReady(){
@@ -1294,6 +1444,8 @@
     const r = getRank();
     $("#rankLabel").textContent = `称号：${r.label}`;
     $("#rankDesc").textContent  = r.desc;
+
+    renderMainChar();   // E10: keep main-char stats/slots in sync
   }
 
   // ---------- tab navigation ----------
@@ -1388,10 +1540,12 @@
     fusing = false;
     if(pendingReal && activeRecipe && !isFused(activeRecipe)){
       fusedIds.push(activeRecipe.result);
+      autoEquip(activeRecipe.result);        // E10: auto-equip the new ultimate if room
       gainExp(activeRecipe.exp);   // gainExp() already persists
       gainCrystals(CRYSTAL_CONFIG.fusion);   // E7: fusion crystal bonus
       renderSkills();
       checkFuseReady();
+      renderMainChar();
       saveState();
       toast(`進化！ ${activeRecipe.result} を獲得`);
     }else if(!pendingReal){
@@ -1506,7 +1660,7 @@
     QUESTS = clone(DEFAULT_QUESTS);
     LV=7; EXP=0; totalExpEarned=0; crystals=0; skills.length=0; fusedIds.length=0; fusing=false;
     streak=0; lastCompletionDate=null; lastSeenDate=todayStr();
-    Object.keys(owned).forEach(k=>delete owned[k]); pity5=0;
+    Object.keys(owned).forEach(k=>delete owned[k]); pity5=0; equipped=[];
     saveState();   // persist the cleared state so a reload stays reset
     renderQuests(); renderSkills(); checkFuseReady(); refreshBars(); updateStreakDisplay(); updateCrystalDisplay(); renderGacha(); renderStatus();
     toast("クエストをリセットした");
