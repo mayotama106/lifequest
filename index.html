@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LifeQuest — Extreme Action & Solid Pop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0A0A0A;
+    --white:#FFFFFF;
+    --yellow:#FFD700;
+    --cyan:#00E5FF;
+    --magenta:#FF0055;
+    --grey:#5a5a5a;
+    --skew:-15deg;
+    --unskew:15deg;
+    --shadow:6px 6px 0 0 var(--black);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:var(--black);
+    font-family:"Noto Sans JP",sans-serif;
+    color:var(--white);
+    overflow-x:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    /* ambient solid hex grid */
+    background-image:
+      linear-gradient(120deg, rgba(255,215,0,.04) 1px, transparent 1px),
+      linear-gradient(60deg, rgba(0,229,255,.04) 1px, transparent 1px);
+    background-size:46px 80px,46px 80px;
+  }
+  .display{font-family:"Anton",sans-serif;font-style:italic;letter-spacing:.5px;}
+
+  /* ---------- phone frame ---------- */
+  .app{
+    width:100%;
+    max-width:448px;
+    min-height:100vh;
+    background:var(--black);
+    border-left:3px solid #1c1c1c;
+    border-right:3px solid #1c1c1c;
+    position:relative;
+    overflow-x:hidden;
+    padding-bottom:120px;
+  }
+
+  /* faint diagonal hex-ish backdrop inside app */
+  .app::before{
+    content:"";
+    position:absolute;inset:0;
+    background-image:repeating-linear-gradient(-15deg,transparent 0 38px,rgba(255,255,255,.018) 38px 40px);
+    pointer-events:none;z-index:0;
+  }
+
+  /* ---------- top status ---------- */
+  header{position:relative;z-index:2;padding:22px 20px 14px;}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .brand{
+    font-family:"Anton",sans-serif;font-style:italic;
+    font-size:30px;line-height:.9;color:var(--white);
+    transform:skewX(var(--skew));
+    text-shadow:3px 3px 0 var(--black);
+  }
+  .brand span{color:var(--yellow);}
+  .brand-tag{
+    background:var(--magenta);color:var(--white);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:11px;
+    padding:4px 12px;transform:skewX(var(--skew));
+    box-shadow:3px 3px 0 var(--black);white-space:nowrap;
+  }
+  .brand-tag b{display:inline-block;transform:skewX(var(--unskew));}
+
+  .stat-strip{
+    display:flex;gap:10px;margin-top:16px;align-items:stretch;
+  }
+  .lv-badge{
+    background:var(--yellow);color:var(--black);
+    transform:skewX(var(--skew));box-shadow:5px 5px 0 var(--black);
+    padding:8px 16px 8px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .lv-badge .k{font-family:"Anton",sans-serif;font-style:italic;font-size:11px;line-height:1;transform:skewX(var(--unskew));}
+  .lv-badge .v{font-family:"Anton",sans-serif;font-style:italic;font-size:34px;line-height:.8;transform:skewX(var(--unskew));}
+
+  .exp-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:6px;}
+  .exp-meta{display:flex;justify-content:space-between;align-items:baseline;padding:0 2px;}
+  .exp-meta .lab{font-family:"Anton",sans-serif;font-style:italic;font-size:13px;color:var(--cyan);}
+  .exp-meta .num{font-family:"Anton",sans-serif;font-style:italic;font-size:13px;color:var(--white);}
+  .exp-bar{
+    height:18px;background:#161616;transform:skewX(var(--skew));
+    box-shadow:4px 4px 0 var(--black);border:2px solid var(--black);
+    position:relative;overflow:hidden;
+  }
+  .exp-fill{
+    height:100%;width:0%;background:var(--cyan);
+    background-image:repeating-linear-gradient(90deg,var(--cyan) 0 14px,#00b8cc 14px 18px);
+    transition:width .55s cubic-bezier(.2,.9,.2,1);
+  }
+
+  .streak{
+    background:var(--black);border:2px solid var(--magenta);
+    transform:skewX(var(--skew));box-shadow:4px 4px 0 var(--magenta);
+    padding:8px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:62px;
+  }
+  .streak .fire{font-size:18px;line-height:1;transform:skewX(var(--unskew));}
+  .streak .v{font-family:"Anton",sans-serif;font-style:italic;font-size:22px;color:var(--magenta);line-height:.9;transform:skewX(var(--unskew));}
+  .streak .k{font-family:"Anton",sans-serif;font-style:italic;font-size:8px;color:var(--white);transform:skewX(var(--unskew));}
+
+  /* ---------- section tape ---------- */
+  .tape{
+    margin:24px 0 14px;overflow:hidden;height:34px;position:relative;z-index:2;
+    transform:skewX(var(--skew));box-shadow:4px 4px 0 var(--black);
+    background:var(--yellow);
+  }
+  .tape .track{
+    display:flex;white-space:nowrap;height:100%;align-items:center;
+    animation:scrolltape 14s linear infinite;
+  }
+  .tape .track span{
+    font-family:"Anton",sans-serif;font-style:italic;font-size:15px;color:var(--black);
+    padding:0 14px;transform:skewX(var(--unskew));
+  }
+  @keyframes scrolltape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  .sec-head{
+    display:flex;align-items:center;gap:10px;padding:0 20px;margin-bottom:6px;position:relative;z-index:2;
+  }
+  .sec-head h2{
+    font-family:"Anton",sans-serif;font-style:italic;font-size:22px;color:var(--white);
+    transform:skewX(var(--skew));
+  }
+  .sec-head .cnt{
+    margin-left:auto;font-family:"Anton",sans-serif;font-style:italic;font-size:13px;
+    color:var(--black);background:var(--cyan);padding:3px 10px;transform:skewX(var(--skew));box-shadow:3px 3px 0 var(--black);
+  }
+  .sec-head .cnt b{display:inline-block;transform:skewX(var(--unskew));}
+
+  /* ---------- quest list ---------- */
+  .quests{padding:8px 20px 0;position:relative;z-index:2;display:flex;flex-direction:column;gap:16px;}
+
+  .quest{
+    position:relative;
+    transform:skewX(var(--skew));
+    background:var(--black);
+    border:2px solid #2a2a2a;
+    box-shadow:6px 6px 0 0 var(--black);
+    padding:14px 14px 14px 12px;
+    display:flex;align-items:center;gap:14px;
+    cursor:pointer;
+    background-image:repeating-linear-gradient(90deg,rgba(255,215,0,.05) 0 2px,transparent 2px 9px);
+    transition:transform .08s ease, box-shadow .08s ease, border-color .25s ease;
+  }
+  .quest.boss{
+    border-color:var(--cyan);
+    background-image:repeating-linear-gradient(90deg,rgba(0,229,255,.07) 0 2px,transparent 2px 9px);
+  }
+  .quest:active{transform:skewX(var(--skew)) translate(3px,3px);box-shadow:3px 3px 0 0 var(--black);}
+  .quest.done{
+    border-color:var(--magenta);
+    box-shadow:6px 6px 0 0 var(--magenta);
+    background-image:repeating-linear-gradient(90deg,rgba(255,0,85,.07) 0 2px,transparent 2px 9px);
+    cursor:default;
+  }
+  .quest.done:active{transform:skewX(var(--skew));box-shadow:6px 6px 0 0 var(--magenta);}
+
+  /* diamond checkbox */
+  .check{
+    flex:0 0 auto;width:34px;height:34px;position:relative;
+    transform:skewX(var(--unskew)); /* counter the parent skew so it stays a clean diamond */
+  }
+  .check .box{
+    position:absolute;inset:0;transform:rotate(45deg);
+    border:3px solid var(--yellow);background:transparent;
+    transition:background .15s ease,border-color .15s ease;
+  }
+  .check .mark{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:"Anton",sans-serif;font-style:italic;font-size:22px;color:var(--white);
+    opacity:0;transform:scale(.4);transition:opacity .15s ease,transform .15s cubic-bezier(.2,1.5,.4,1);
+  }
+  .quest.done .check .box{background:var(--magenta);border-color:var(--magenta);}
+  .quest.done .check .mark{opacity:1;transform:scale(1);}
+
+  .q-main{flex:1;min-width:0;transform:skewX(var(--unskew));}
+  .q-kind{
+    font-family:"Anton",sans-serif;font-style:italic;font-size:10px;color:var(--cyan);
+    letter-spacing:1px;margin-bottom:2px;
+  }
+  .quest:not(.boss) .q-kind{color:var(--grey);}
+  .q-title{
+    font-family:"Noto Sans JP",sans-serif;font-weight:900;font-size:15px;color:var(--white);
+    line-height:1.25;word-break:break-word;
+  }
+  .quest.done .q-title{text-decoration:line-through;text-decoration-thickness:2px;color:#9a9a9a;}
+
+  .exp-tag{
+    flex:0 0 auto;transform:skewX(var(--unskew));
+    background:var(--yellow);color:var(--black);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:14px;
+    padding:6px 10px;box-shadow:3px 3px 0 var(--black);white-space:nowrap;
+    align-self:flex-start;
+  }
+  .quest.done .exp-tag{background:var(--grey);color:#1a1a1a;box-shadow:3px 3px 0 #000;}
+  .exp-tag small{font-size:9px;}
+
+  /* ---------- tab navigation ---------- */
+  .tabbar{display:flex;gap:8px;padding:0 20px;margin-top:18px;position:relative;z-index:2;}
+  .tab{
+    flex:1;border:2px solid var(--cyan);cursor:pointer;background:var(--black);
+    color:var(--cyan);font-family:"Anton",sans-serif;font-style:italic;font-size:14px;
+    padding:11px 6px;transform:skewX(var(--skew));box-shadow:4px 4px 0 var(--black);
+    transition:background .15s ease,color .15s ease,border-color .15s ease;
+  }
+  .tab span{display:inline-block;transform:skewX(var(--unskew));}
+  .tab.active{background:var(--yellow);color:var(--black);border-color:var(--yellow);}
+  .tab:active{transform:skewX(var(--skew)) translate(2px,2px);box-shadow:2px 2px 0 0 var(--black);}
+
+  /* ---------- view switching ---------- */
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ---------- status screen ---------- */
+  .status-banner{padding:24px 20px 0;position:relative;z-index:2;}
+  .sb-rank{
+    display:inline-block;background:var(--magenta);color:var(--white);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:14px;
+    padding:6px 16px;transform:skewX(var(--skew));box-shadow:5px 5px 0 var(--black);
+  }
+  .sb-rank span{display:inline-block;transform:skewX(var(--unskew));}
+  .sb-desc{margin-top:12px;font-size:12px;color:var(--grey);font-weight:700;line-height:1.6;max-width:300px;}
+
+  .attr-sec{padding-top:24px;position:relative;z-index:2;}
+  .attr-list{padding:0 20px;display:flex;flex-direction:column;gap:16px;}
+  .attr-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .attr-name{font-family:"Anton",sans-serif;font-style:italic;font-size:12px;color:var(--white);letter-spacing:.5px;}
+  .attr-num{font-family:"Anton",sans-serif;font-style:italic;font-size:14px;color:var(--yellow);}
+  .attr-bar{
+    height:16px;background:#161616;transform:skewX(var(--skew));
+    box-shadow:4px 4px 0 var(--black);border:2px solid var(--black);
+    position:relative;overflow:hidden;
+  }
+  .attr-fill{height:100%;width:0%;transition:width .55s cubic-bezier(.2,.9,.2,1);}
+
+  /* ---------- skill inventory ---------- */
+  .skills-sec{padding:30px 20px 0;position:relative;z-index:2;}
+  .skill-grid{display:flex;flex-direction:column;gap:14px;margin-top:10px;}
+  .skill-chip{
+    transform:skewX(var(--skew));background:var(--black);border:2px solid var(--cyan);
+    box-shadow:5px 5px 0 var(--black);padding:14px 16px;
+  }
+  .skill-chip.fused{border-color:var(--yellow);box-shadow:5px 5px 0 var(--yellow);background:#141000;}
+  .skill-chip.consumed{opacity:.5;}
+  .skill-chip .nm{display:block;transform:skewX(var(--unskew));font-weight:900;font-size:16px;color:var(--white);margin:3px 0 6px;}
+  .skill-chip .lb{display:block;transform:skewX(var(--unskew));font-family:"Anton",sans-serif;font-style:italic;font-size:10px;color:var(--cyan);}
+  .skill-chip.fused .lb{color:var(--yellow);}
+  .skill-chip .desc{display:block;transform:skewX(var(--unskew));font-size:12px;color:#b9b9b9;font-weight:700;line-height:1.5;}
+  .skill-empty{font-size:12px;color:var(--grey);font-weight:700;padding:6px 2px;}
+
+  .preview-row{display:flex;gap:10px;margin:4px 0 14px;flex-wrap:wrap;}
+  .preview-btn{
+    background:transparent;border:2px dashed var(--cyan);color:var(--cyan);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:11px;
+    padding:8px 12px;cursor:pointer;transform:skewX(var(--skew));
+    transition:background .15s ease,color .15s ease;
+  }
+  .preview-btn span{display:inline-block;transform:skewX(var(--unskew));}
+  .preview-btn:active{background:var(--cyan);color:var(--black);}
+  .preview-btn.alt{border-color:var(--magenta);color:var(--magenta);}
+  .preview-btn.alt:active{background:var(--magenta);color:var(--white);}
+
+  /* ---------- fuse button (fixed) ---------- */
+  .dock{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:0;
+    width:100%;max-width:448px;padding:14px 20px 22px;z-index:30;
+    background:linear-gradient(to top,var(--black) 65%,transparent);
+    display:flex;gap:12px;
+  }
+  .btn{
+    position:relative;flex:1;border:none;cursor:pointer;
+    font-family:"Anton",sans-serif;font-style:italic;
+    background:var(--yellow);color:var(--black);
+    transform:skewX(var(--skew));box-shadow:var(--shadow);
+    padding:16px 10px;font-size:18px;letter-spacing:1px;
+    transition:transform .07s ease,box-shadow .07s ease,opacity .25s ease,background .25s ease;
+  }
+  .btn span{display:inline-block;transform:skewX(var(--unskew));}
+  .btn:active{transform:skewX(var(--skew)) translate(4px,4px);box-shadow:2px 2px 0 0 var(--black);}
+  .btn.fuse{background:var(--magenta);color:var(--white);}
+  .btn.fuse:disabled{background:#2a2a2a;color:#666;cursor:not-allowed;box-shadow:6px 6px 0 #000;}
+  .btn.fuse:disabled:active{transform:skewX(var(--skew));box-shadow:6px 6px 0 #000;}
+  .btn.fuse.ready{animation:pulse 1s steps(2) infinite;}
+  @keyframes pulse{0%{box-shadow:6px 6px 0 0 var(--black);}50%{box-shadow:6px 6px 0 0 var(--cyan);}}
+
+  /* ============ 5.1 SKILL CUT-IN ============ */
+  .overlay{
+    position:fixed;inset:0;z-index:100;display:none;
+    align-items:center;justify-content:center;overflow:hidden;
+    background:rgba(10,10,10,.94);
+  }
+  .overlay.show{display:flex;}
+
+  /* solid hex grid */
+  .hexgrid{
+    position:absolute;inset:-10%;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'><g fill='none' stroke='%23FFD700' stroke-width='2'><polygon points='28,2 54,18 54,50 28,66 2,50 2,18'/><polygon points='28,68 54,84 54,116 28,132 2,116 2,84'/></g></svg>");
+    background-size:56px 100px;opacity:0;
+    animation:hexin .5s ease forwards;
+  }
+  .overlay.fuse-mode .hexgrid{filter:none;}
+  @keyframes hexin{from{opacity:0;transform:scale(1.4);}to{opacity:.28;transform:scale(1);}}
+
+  /* warning tapes */
+  .warntape{
+    position:absolute;left:-20%;width:140%;height:42px;overflow:hidden;
+    display:flex;align-items:center;box-shadow:0 0 0 3px var(--black);
+  }
+  .warntape.t1{top:24%;transform:rotate(-8deg);background:var(--yellow);}
+  .warntape.t2{bottom:24%;transform:rotate(6deg);background:var(--cyan);}
+  .warntape .tt{display:flex;white-space:nowrap;animation:scrolltape 9s linear infinite;}
+  .warntape .tt span{font-family:"Anton",sans-serif;font-style:italic;font-size:18px;color:var(--black);padding:0 16px;}
+  .warntape.t2 .tt{animation-direction:reverse;animation-duration:11s;}
+
+  .cutin{
+    position:relative;z-index:5;width:86%;max-width:380px;text-align:center;
+    transform:scale(0) skewX(var(--skew));
+    animation:zoomin .45s cubic-bezier(.15,1.4,.4,1) forwards;
+  }
+  @keyframes zoomin{to{transform:scale(1) skewX(var(--skew));}}
+  .kokuban{
+    display:inline-block;background:var(--cyan);color:var(--black);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:24px;
+    padding:4px 18px;box-shadow:5px 5px 0 var(--black);margin-bottom:-12px;position:relative;z-index:2;
+  }
+  .kokuban b{display:inline-block;transform:skewX(var(--unskew));}
+  .cut-panel{
+    background:var(--black);border:5px solid var(--yellow);
+    box-shadow:9px 9px 0 var(--black);padding:34px 22px 26px;
+  }
+  .cut-panel .lead{transform:skewX(var(--unskew));font-weight:900;font-size:14px;color:var(--cyan);margin-bottom:8px;letter-spacing:1px;}
+  .cut-panel .skill-name{
+    transform:skewX(var(--unskew));font-family:"Noto Sans JP",sans-serif;font-weight:900;
+    font-size:30px;line-height:1.1;color:var(--white);margin:4px 0 12px;
+  }
+  .cut-panel .skill-name em{color:var(--yellow);font-style:normal;}
+  .cut-panel .got{
+    transform:skewX(var(--unskew));font-family:"Anton",sans-serif;font-style:italic;
+    font-size:16px;color:var(--yellow);
+  }
+  .cut-hint{position:absolute;bottom:24px;left:0;right:0;text-align:center;z-index:5;
+    font-family:"Anton",sans-serif;font-style:italic;color:#888;font-size:12px;animation:blink 1s steps(2) infinite;}
+  @keyframes blink{50%{opacity:.25}}
+
+  /* ============ 5.2 FUSION ============ */
+  .fuse-stage{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+  .announce{
+    position:absolute;top:14%;left:50%;transform:translateX(-200%) skewX(var(--skew));
+    background:var(--black);border:3px solid var(--cyan);box-shadow:6px 6px 0 var(--black);
+    padding:12px 18px;max-width:88%;
+  }
+  .announce.in{animation:slidein .5s cubic-bezier(.2,.9,.2,1) forwards;}
+  @keyframes slidein{to{transform:translateX(-50%) skewX(var(--skew));}}
+  .announce .a-badge{display:inline-block;background:var(--cyan);color:var(--black);font-family:"Anton",sans-serif;font-style:italic;font-size:12px;padding:2px 8px;transform:skewX(var(--unskew));}
+  .announce .a-txt{display:block;transform:skewX(var(--unskew));font-weight:900;font-size:13px;color:var(--white);margin-top:6px;}
+
+  /* materials stack vertically (top/bottom) so they fit a narrow phone instead of
+     sliding in from the sides and getting clipped */
+  .material{
+    position:absolute;left:50%;width:80%;max-width:320px;
+    transform:translateX(-50%) skewX(var(--skew));
+    background:var(--black);border:3px solid var(--cyan);box-shadow:5px 5px 0 var(--black);
+    padding:14px 16px;opacity:0;text-align:center;
+  }
+  .material .mn{display:block;transform:skewX(var(--unskew));font-weight:900;font-size:16px;color:var(--white);}
+  .material .ml{display:block;transform:skewX(var(--unskew));font-family:"Anton",sans-serif;font-style:italic;font-size:10px;color:var(--cyan);}
+  .material.left{top:-28%;}    /* slides down from above */
+  .material.right{top:118%;}   /* slides up from below */
+  .material.left.in{animation:matTop .6s ease forwards;}
+  .material.right.in{animation:matBot .6s ease forwards;}
+  @keyframes matTop{to{top:31%;opacity:1;}}
+  @keyframes matBot{to{top:60%;opacity:1;}}
+  .material.crash.left{animation:crashTop .35s ease-in forwards;}
+  .material.crash.right{animation:crashBot .35s ease-in forwards;}
+  @keyframes crashTop{from{top:31%;opacity:1;}to{top:44%;opacity:0;}}
+  @keyframes crashBot{from{top:60%;opacity:1;}to{top:46%;opacity:0;}}
+
+  .flash{position:absolute;inset:0;z-index:8;opacity:0;pointer-events:none;}
+  .flash.go{animation:solidflash .5s steps(1) forwards;}
+  @keyframes solidflash{
+    0%{opacity:0;background:var(--magenta);}
+    30%{opacity:1;background:var(--magenta);}
+    55%{opacity:1;background:var(--white);}
+    100%{opacity:0;background:var(--white);}
+  }
+
+  .newskill{
+    position:relative;z-index:7;width:88%;max-width:400px;text-align:center;
+    transform:translateY(-140%) skewX(var(--skew));opacity:0;
+  }
+  .newskill.drop{animation:dropin .5s cubic-bezier(.3,1.3,.5,1) forwards;}
+  @keyframes dropin{0%{transform:translateY(-140%) skewX(var(--skew));opacity:0;}70%{transform:translateY(6%) skewX(var(--skew));opacity:1;}100%{transform:translateY(0) skewX(var(--skew));opacity:1;}}
+  .newskill .np{
+    background:var(--black);border:6px solid var(--yellow);box-shadow:11px 11px 0 var(--black);padding:30px 20px;
+  }
+  .newskill .evo{transform:skewX(var(--unskew));font-family:"Anton",sans-serif;font-style:italic;font-size:16px;color:var(--magenta);letter-spacing:1px;}
+  .newskill .nn{transform:skewX(var(--unskew));font-family:"Noto Sans JP",sans-serif;font-weight:900;font-size:34px;color:var(--yellow);line-height:1.05;margin:8px 0;}
+  .newskill .ns{transform:skewX(var(--unskew));font-weight:900;font-size:12px;color:var(--white);}
+
+  /* toast */
+  .toast{
+    position:fixed;left:50%;bottom:104px;transform:translateX(-50%) translateY(140%) skewX(var(--skew));
+    background:var(--white);color:var(--black);font-family:"Anton",sans-serif;font-style:italic;font-size:15px;
+    padding:10px 20px;box-shadow:5px 5px 0 var(--black);z-index:60;white-space:nowrap;
+  }
+  .toast b{display:inline-block;transform:skewX(var(--unskew));}
+  .toast.show{animation:toast 2.2s ease forwards;}
+  @keyframes toast{0%{transform:translateX(-50%) translateY(140%) skewX(var(--skew));}15%,80%{transform:translateX(-50%) translateY(0) skewX(var(--skew));}100%{transform:translateX(-50%) translateY(140%) skewX(var(--skew));}}
+
+  /* ---------- quest card actions (edit/delete) ---------- */
+  .q-actions{
+    flex:0 0 auto;display:flex;flex-direction:column;gap:6px;
+    transform:skewX(var(--unskew));align-self:stretch;justify-content:center;
+  }
+  .q-act{
+    cursor:pointer;background:transparent;border:2px solid #3a3a3a;color:#cfcfcf;
+    font-size:12px;line-height:1;padding:4px 6px;transition:border-color .15s ease,color .15s ease;
+  }
+  .q-act.edit:hover,.q-act.edit:focus-visible{border-color:var(--cyan);color:var(--cyan);}
+  .q-act.del:hover,.q-act.del:focus-visible{border-color:var(--magenta);color:var(--magenta);}
+
+  /* ---------- add-quest button ---------- */
+  .add-quest-btn{
+    margin-left:auto;cursor:pointer;
+    background:var(--cyan);color:var(--black);border:none;
+    font-family:"Anton",sans-serif;font-style:italic;font-size:13px;
+    padding:4px 12px;transform:skewX(var(--skew));box-shadow:3px 3px 0 var(--black);
+    transition:transform .08s ease,box-shadow .08s ease;
+  }
+  .add-quest-btn span{display:inline-block;transform:skewX(var(--unskew));}
+  .add-quest-btn:active{transform:skewX(var(--skew)) translate(2px,2px);box-shadow:1px 1px 0 var(--black);}
+  .sec-head .add-quest-btn + .cnt{margin-left:8px;}
+
+  /* ---------- quest add/edit modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:80;display:none;
+    align-items:center;justify-content:center;padding:20px;
+    background:rgba(10,10,10,.9);
+  }
+  .modal-overlay.show{display:flex;}
+  .modal-panel{
+    width:100%;max-width:380px;background:var(--black);
+    border:4px solid var(--yellow);box-shadow:9px 9px 0 var(--black);
+    padding:22px 18px 20px;
+  }
+  /* slanted tab badge kept skewed for the Solid Pop accent; panel/inputs stay square */
+  .modal-head{
+    background:var(--yellow);color:var(--black);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:18px;
+    padding:6px 16px;margin:-34px 0 18px -6px;display:inline-block;
+    transform:skewX(var(--skew));box-shadow:4px 4px 0 var(--black);
+  }
+  .modal-head b{display:inline-block;transform:skewX(var(--unskew));}
+  .fld{display:block;margin-bottom:14px;}
+  .fld-lab{
+    display:block;font-family:"Anton",sans-serif;font-style:italic;font-size:12px;
+    color:var(--cyan);margin-bottom:5px;letter-spacing:.5px;
+  }
+  .fld-lab i{color:var(--magenta);font-style:normal;font-size:10px;}
+  .fld input[type=text],.fld input[type=number]{
+    width:100%;background:#141414;border:2px solid #333;color:var(--white);
+    font-family:"Noto Sans JP",sans-serif;font-weight:700;font-size:15px;
+    padding:10px 12px;
+  }
+  .fld input:focus{outline:none;border-color:var(--cyan);}
+  .fld input.invalid{border-color:var(--magenta);}
+  .fld.chk{display:flex;align-items:center;gap:8px;cursor:pointer;
+    font-family:"Noto Sans JP",sans-serif;font-weight:700;font-size:13px;color:var(--white);}
+  .fld.chk input{width:18px;height:18px;accent-color:var(--magenta);flex:0 0 auto;}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;}
+  .modal-actions .btn{padding:12px 10px;font-size:15px;box-shadow:4px 4px 0 var(--black);}
+  .btn.modal-cancel{flex:0 0 38%;background:var(--white);color:var(--black);}
+  .btn.modal-save{background:var(--magenta);color:var(--white);}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+  }
+  :focus-visible{outline:3px solid var(--cyan);outline-offset:2px;}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <header>
+    <div class="brand-row">
+      <div class="brand">LIFE<span>QUEST</span></div>
+      <div class="brand-tag"><b>EXTREME ACTION</b></div>
+    </div>
+
+    <div class="stat-strip">
+      <div class="lv-badge">
+        <div class="k">LV</div>
+        <div class="v" id="lvVal">7</div>
+      </div>
+      <div class="exp-wrap">
+        <div class="exp-meta">
+          <span class="lab">EXP</span>
+          <span class="num" id="expTxt">0 / 500</span>
+        </div>
+        <div class="exp-bar"><div class="exp-fill" id="expFill"></div></div>
+        <div class="exp-meta"><span class="lab" style="color:var(--grey);font-size:10px">NEXT LV まで</span><span class="num" id="expRemain" style="color:var(--grey);font-size:10px">500</span></div>
+      </div>
+      <div class="streak">
+        <div class="fire">🔥</div>
+        <div class="v" id="streakVal">12</div>
+        <div class="k">STREAK</div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabbar" role="tablist" aria-label="画面切り替え">
+    <button class="tab active" id="tabQuestBtn" role="tab" aria-selected="true" type="button"><span>QUEST LOG</span></button>
+    <button class="tab" id="tabStatusBtn" role="tab" aria-selected="false" type="button"><span>STATUS</span></button>
+  </nav>
+
+  <main id="viewQuest" class="view active">
+    <div class="tape" aria-hidden="true">
+      <div class="track">
+        <span>⚠ LIFEQUEST SYSTEM ⚠ 動け、宮川 ⚠ NO BLUR ⚠ SOLID ONLY ⚠ 即行動 ⚠&nbsp;</span>
+        <span>⚠ LIFEQUEST SYSTEM ⚠ 動け、宮川 ⚠ NO BLUR ⚠ SOLID ONLY ⚠ 即行動 ⚠&nbsp;</span>
+      </div>
+    </div>
+
+    <div class="sec-head">
+      <h2>TODAY'S QUESTS</h2>
+      <button class="add-quest-btn" id="addQuestBtn" type="button" aria-label="クエストを追加"><span>＋ ADD</span></button>
+      <div class="cnt"><b><span id="remainCnt">0</span> LEFT</b></div>
+    </div>
+
+    <div class="quests" id="questList"></div>
+  </main>
+
+  <main id="viewStatus" class="view">
+    <div class="status-banner">
+      <div class="sb-rank"><span id="rankLabel">称号：無冠の冒険者</span></div>
+      <div class="sb-desc" id="rankDesc">まだ何も成し遂げていない。最初の一歩を踏み出せ。</div>
+    </div>
+
+    <div class="attr-sec">
+      <div class="sec-head" style="margin-bottom:10px;">
+        <h2 style="font-size:18px;">ATTRIBUTES</h2>
+      </div>
+      <div class="attr-list">
+        <div class="attr-row">
+          <div class="attr-top"><span class="attr-name">実行力 EXECUTION</span><span class="attr-num" id="attrActionNum">0%</span></div>
+          <div class="attr-bar"><div class="attr-fill" id="attrActionFill" style="background:var(--yellow)"></div></div>
+        </div>
+        <div class="attr-row">
+          <div class="attr-top"><span class="attr-name">討伐力 BOSS SLAYER</span><span class="attr-num" id="attrBossNum">0%</span></div>
+          <div class="attr-bar"><div class="attr-fill" id="attrBossFill" style="background:var(--magenta)"></div></div>
+        </div>
+        <div class="attr-row">
+          <div class="attr-top"><span class="attr-name">成長値 GROWTH</span><span class="attr-num" id="attrGrowthNum">0%</span></div>
+          <div class="attr-bar"><div class="attr-fill" id="attrGrowthFill" style="background:var(--cyan)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="skills-sec">
+      <div class="sec-head" style="padding:0;margin-bottom:4px;">
+        <h2 style="font-size:20px;">SKILLS</h2>
+        <div class="cnt" style="background:var(--yellow)"><b id="skillCnt">0 GOT</b></div>
+      </div>
+
+      <div class="preview-row">
+        <button class="preview-btn" id="previewCutBtn" type="button"><span>▶ スキル獲得 演出を見る</span></button>
+        <button class="preview-btn alt" id="previewFuseBtn" type="button"><span>▶ 進化 演出を見る</span></button>
+      </div>
+
+      <div class="skill-grid" id="skillGrid">
+        <div class="skill-empty">― まだスキルは未獲得。BOSSクエストを討伐せよ ―</div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<!-- bottom dock -->
+<div class="dock">
+  <button class="btn" id="resetBtn" type="button" style="flex:0 0 38%;background:var(--white)"><span>RESET</span></button>
+  <button class="btn fuse" id="fuseBtn" type="button" disabled><span id="fuseLabel">統合不可</span></button>
+</div>
+
+<!-- ===== 5.1 cut-in overlay ===== -->
+<div class="overlay" id="cutOverlay" role="alertdialog" aria-label="スキル獲得">
+  <div class="hexgrid"></div>
+  <div class="warntape t1"><div class="tt"><span>＜告＞ SKILL ACQUIRED ＜告＞ 固有スキル発現 ＜告＞ SKILL ACQUIRED ＜告＞ 固有スキル発現 ＜告＞</span></div></div>
+  <div class="warntape t2"><div class="tt"><span>LIFEQUEST // SYSTEM ALERT // LIFEQUEST // SYSTEM ALERT // LIFEQUEST // SYSTEM ALERT //</span></div></div>
+  <div class="cutin">
+    <div class="kokuban"><b>＜告＞</b></div>
+    <div class="cut-panel">
+      <div class="lead">BOSS DEFEATED</div>
+      <div class="skill-name">固有スキル<br><em id="cutSkillName">――</em></div>
+      <div class="got">を 獲得しました</div>
+    </div>
+  </div>
+  <div class="cut-hint">― TAP TO CLOSE ―</div>
+</div>
+
+<!-- ===== 5.2 fusion overlay ===== -->
+<div class="overlay fuse-mode" id="fuseOverlay" role="alertdialog" aria-label="スキル統合">
+  <div class="hexgrid" id="fuseHex"></div>
+  <div class="fuse-stage">
+    <div class="announce" id="announce">
+      <span class="a-badge">＜告＞</span>
+      <span class="a-txt">条件を満たしました。スキルの統合を開始します。</span>
+    </div>
+    <div class="material left" id="matLeft"><span class="ml">MATERIAL</span><span class="mn">――</span></div>
+    <div class="material right" id="matRight"><span class="ml">MATERIAL</span><span class="mn">――</span></div>
+    <div class="newskill" id="newSkill">
+      <div class="np">
+        <div class="evo">▲ SKILL EVOLVED ▲</div>
+        <div class="nn" id="fuseName">――</div>
+        <div class="ns">上位スキルが爆誕した</div>
+      </div>
+    </div>
+  </div>
+  <div class="flash" id="flash"></div>
+  <div class="cut-hint" id="fuseHint" style="display:none">― TAP TO CLOSE ―</div>
+</div>
+
+<!-- ===== quest add/edit modal (S2-1) ===== -->
+<div class="modal-overlay" id="questModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-panel">
+    <div class="modal-head"><b id="modalTitle">NEW QUEST</b></div>
+    <form id="questForm" novalidate>
+      <label class="fld">
+        <span class="fld-lab">クエスト名 <i>必須</i></span>
+        <input id="fTitle" type="text" maxlength="60" autocomplete="off" placeholder="例：朝のストレッチを5分やる">
+      </label>
+      <label class="fld">
+        <span class="fld-lab">種別</span>
+        <input id="fKind" type="text" maxlength="24" autocomplete="off" placeholder="DAILY">
+      </label>
+      <label class="fld">
+        <span class="fld-lab">獲得EXP</span>
+        <input id="fExp" type="number" min="1" max="9999" value="30">
+      </label>
+      <label class="fld chk">
+        <input id="fHabit" type="checkbox">
+        <span>習慣クエスト（毎日リセット）</span>
+      </label>
+      <label class="fld chk">
+        <input id="fBoss" type="checkbox">
+        <span>BOSS クエスト（討伐でスキル獲得）</span>
+      </label>
+      <label class="fld" id="fSkillWrap" style="display:none">
+        <span class="fld-lab">獲得スキル名 <i>必須</i></span>
+        <input id="fSkill" type="text" maxlength="30" autocomplete="off" placeholder="例：フロントエンド構築">
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn modal-cancel" id="modalCancel"><span>やめる</span></button>
+        <button type="submit" class="btn modal-save"><span id="modalSaveLabel">登録</span></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"><b id="toastMsg"></b></div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = s => document.querySelector(s);
+  const reduce = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  // ---------- data ----------
+  // seed quests (used on first launch and on RESET)
+  const DEFAULT_QUESTS = [
+    {id:"q1", kind:"DAILY",  title:"朝のストレッチを5分やる", exp:30,  boss:false, habit:true},
+    {id:"q2", kind:"DAILY",  title:"未読メールを0件にする", exp:50,  boss:false, habit:true},
+    {id:"q3", kind:"BOSS // 開発", title:"ログイン画面のUIを実装する", exp:200, boss:true, skill:"フロントエンド構築", mat:true},
+    {id:"q4", kind:"DAILY",  title:"応用情報の過去問を1年分やる", exp:80, boss:false, habit:true},
+    {id:"q5", kind:"BOSS // 開発", title:"認証APIサーバーを実装する", exp:200, boss:true, skill:"バックエンド構築", mat:true},
+    {id:"q6", kind:"DAILY",  title:"散らかった机の上を片付ける", exp:40, boss:false, habit:true},
+    {id:"q7", kind:"BOSS // 開発", title:"DBスキーマを設計しきる", exp:220, boss:true, skill:"データベース設計", mat:true},
+    {id:"q8", kind:"BOSS // 自己研鑽", title:"SP55・56チケットを消化する", exp:160, boss:true, skill:"高速タスク処理", mat:false},
+  ];
+  const clone = obj => JSON.parse(JSON.stringify(obj));
+  let QUESTS = clone(DEFAULT_QUESTS);
+
+  // fusion recipes (S5-2): data-driven so new recipes can be added without code changes
+  const FUSE_RECIPES = [
+    {
+      id:"fullstack",
+      materials:["フロントエンド構築","バックエンド構築","データベース設計"],
+      result:"フルスタック開発者",
+      desc:"三つの基礎スキルが融合し誕生した、何でも作れる究極の称号。",
+      exp:500
+    }
+  ];
+
+  // EXP curve config (S4-1): expForLevel(lv) drives level-ups; tweak here to rebalance
+  const EXP_CONFIG = { base:500, perLevel:0 };   // base + perLevel*(lv-1); perLevel=0 -> flat 500
+  function expForLevel(lv){ return Math.max(1, EXP_CONFIG.base + EXP_CONFIG.perLevel*(lv-1)); }
+
+  let LV = 7;
+  let EXP = 0;
+  const skills = [];          // acquired skill names
+  const fusedIds = [];        // result-names of recipes already fused (S5-2)
+  let totalExpEarned = 0;     // cumulative EXP earned all-time, drives the GROWTH attribute
+
+  // streak / habit state (E3)
+  let streak = 0;                  // current consecutive achievement days
+  let lastCompletionDate = null;   // "YYYY-MM-DD" of the latest day with >=1 completion
+  let lastSeenDate = null;         // "YYYY-MM-DD" the app last ran daily rollover
+
+  const SKILL_INFO = {
+    "フロントエンド構築": "画面を一瞬で実体化させる、基本武装としての構築術。",
+    "バックエンド構築": "見えない場所で全てを支える、堅牢なロジックの盾。",
+    "データベース設計": "情報を完璧に整理し、未来の自分を救う設計術。",
+    "高速タスク処理": "積み上がったチケットを瞬殺する、圧倒的スピード。"
+  };
+
+  // ---------- fusion recipe helpers (S5-2) ----------
+  function isFused(r){ return fusedIds.includes(r.result); }
+  function recipeReady(r){ return !isFused(r) && r.materials.every(m=>skills.includes(m)); }
+  // a skill is "consumed" if it is a material of any recipe that has already been fused
+  function isConsumed(skill){ return FUSE_RECIPES.some(r=>isFused(r) && r.materials.includes(skill)); }
+  // first recipe whose materials are all owned and which hasn't been fused yet
+  function getReadyRecipe(){ return FUSE_RECIPES.find(recipeReady) || null; }
+  // progress toward the closest non-fused recipe, for the disabled button label
+  function fuseProgress(){
+    let best = {have:0, total:0};
+    FUSE_RECIPES.filter(r=>!isFused(r)).forEach(r=>{
+      const have = r.materials.filter(m=>skills.includes(m)).length;
+      if(have >= best.have){ best = {have, total:r.materials.length}; }
+    });
+    return best;
+  }
+
+  // ---------- html escape (S6-1) ----------
+  // user-entered quest/skill text is rendered via innerHTML; escape it to prevent XSS
+  function esc(str){
+    return String(str==null?"":str).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  // ---------- persistence (S1-1) ----------
+  const STORAGE_KEY = "lifequest:v1";
+  const STATE_VERSION = 1;
+
+  // collect the whole game state into a plain object
+  function serializeState(){
+    return {
+      version: STATE_VERSION,
+      LV, EXP, totalExpEarned,
+      fusedIds: fusedIds.slice(),
+      streak, lastCompletionDate, lastSeenDate,
+      skills: skills.slice(),
+      quests: QUESTS.map(q=>({
+        id:q.id, kind:q.kind, title:q.title, exp:q.exp,
+        boss:!!q.boss, skill:q.skill, mat:!!q.mat, habit:!!q.habit, done:!!q.done
+      })),
+    };
+  }
+
+  let _suspendSave = false;   // avoid writing while restoring
+  function saveState(){
+    if(_suspendSave) return;
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
+    }catch(e){ /* storage full / unavailable: keep running in-memory */ }
+  }
+
+  // returns a validated state object, or null to fall back to defaults
+  function loadState(){
+    let raw;
+    try{ raw = localStorage.getItem(STORAGE_KEY); }
+    catch(e){ return null; }
+    if(!raw) return null;
+    try{
+      const s = JSON.parse(raw);
+      if(!s || typeof s !== "object") return null;
+      if(s.version !== STATE_VERSION) return null;   // future: migrate here
+      if(!Array.isArray(s.quests)) return null;
+      return s;
+    }catch(e){ return null; }   // corrupted JSON -> defaults
+  }
+
+  // apply a restored state into the live variables
+  function applyState(s){
+    _suspendSave = true;
+    LV = Number.isFinite(s.LV) ? s.LV : 7;
+    EXP = Number.isFinite(s.EXP) ? s.EXP : 0;
+    totalExpEarned = Number.isFinite(s.totalExpEarned) ? s.totalExpEarned : 0;
+    fusedIds.length = 0;
+    if(Array.isArray(s.fusedIds)) s.fusedIds.forEach(x=>{ if(typeof x==="string") fusedIds.push(x); });
+    else if(s.fused) fusedIds.push(FUSE_RECIPES[0].result);   // migrate old boolean save
+    streak = Number.isFinite(s.streak) ? s.streak : 0;
+    lastCompletionDate = typeof s.lastCompletionDate === "string" ? s.lastCompletionDate : null;
+    lastSeenDate = typeof s.lastSeenDate === "string" ? s.lastSeenDate : null;
+    skills.length = 0;
+    if(Array.isArray(s.skills)) s.skills.forEach(x=>{ if(typeof x==="string") skills.push(x); });
+    QUESTS = s.quests.map(q=>({
+      id:q.id, kind:q.kind, title:q.title, exp:Number(q.exp)||0,
+      boss:!!q.boss, skill:q.skill, mat:!!q.mat, habit:!!q.habit, done:!!q.done
+    }));
+    _suspendSave = false;
+  }
+
+  // ---------- streak / habit (E3) ----------
+  // local-date based (not UTC) so "today" matches the user's wall clock
+  function todayStr(d){
+    const t = d || new Date();
+    const y = t.getFullYear();
+    const m = String(t.getMonth()+1).padStart(2,"0");
+    const day = String(t.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+  // whole-day difference (b - a), both "YYYY-MM-DD" parsed at local midnight
+  function dayDiff(a, b){
+    const pa = a.split("-").map(Number), pb = b.split("-").map(Number);
+    const da = new Date(pa[0], pa[1]-1, pa[2]);
+    const db = new Date(pb[0], pb[1]-1, pb[2]);
+    return Math.round((db - da) / 86400000);
+  }
+
+  // S3-2: count an achievement day on the first completion of each day
+  function registerCompletionForStreak(){
+    const today = todayStr();
+    if(lastCompletionDate === today) return;   // already counted today
+    if(lastCompletionDate && dayDiff(lastCompletionDate, today) === 1){
+      streak += 1;                              // consecutive day
+    }else{
+      streak = 1;                              // first ever, or a gap -> restart
+    }
+    lastCompletionDate = today;
+  }
+
+  // S3-1 + S3-2: reset habit quests when the day changes; break the streak on a missed day
+  function rolloverIfNewDay(){
+    const today = todayStr();
+    if(lastSeenDate === today) return;
+    QUESTS.forEach(q=>{ if(q.habit) q.done = false; });   // habits come back each day
+    if(!lastCompletionDate || dayDiff(lastCompletionDate, today) >= 2){
+      streak = 0;                                          // missed a full day -> broken
+    }
+    lastSeenDate = today;
+    saveState();
+  }
+
+  function updateStreakDisplay(){
+    const el = $("#streakVal");
+    if(el) el.textContent = streak;
+  }
+
+  // ---------- render quests ----------
+  const list = $("#questList");
+  function renderQuests(){
+    list.innerHTML = "";
+    QUESTS.forEach(q=>{
+      const el = document.createElement("div");
+      el.className = "quest" + (q.boss?" boss":"") + (q.done?" done":"");
+      el.setAttribute("role","button");
+      el.setAttribute("tabindex","0");
+      el.setAttribute("aria-pressed", q.done?"true":"false");
+      el.dataset.id = q.id;
+      el.innerHTML = `
+        <div class="check"><div class="box"></div><div class="mark">✕</div></div>
+        <div class="q-main">
+          <div class="q-kind">${esc(q.kind)}</div>
+          <div class="q-title">${esc(q.title)}</div>
+        </div>
+        <div class="exp-tag">+${Number(q.exp)||0}<small> EXP</small></div>
+        <div class="q-actions">
+          <button class="q-act edit" type="button" aria-label="編集">✎</button>
+          <button class="q-act del" type="button" aria-label="削除">🗑</button>
+        </div>`;
+      el.addEventListener("click", ()=>toggle(q.id));
+      el.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle(q.id);} });
+      // edit / delete must not trigger completion (S2-2)
+      el.querySelector(".q-act.edit").addEventListener("click", e=>{ e.stopPropagation(); openQuestModal(q); });
+      el.querySelector(".q-act.del").addEventListener("click", e=>{ e.stopPropagation(); deleteQuest(q.id); });
+      list.appendChild(el);
+    });
+    updateCounts();
+  }
+
+  function updateCounts(){
+    const left = QUESTS.filter(q=>!q.done).length;
+    $("#remainCnt").textContent = left;
+  }
+
+  // ---------- exp / level ----------
+  function refreshBars(animate=true){
+    const need = expForLevel(LV);
+    const pct = Math.min(100, Math.round(EXP/need*100));
+    $("#expFill").style.width = pct + "%";
+    $("#lvVal").textContent = LV;
+    $("#expTxt").textContent = `${EXP} / ${need}`;
+    $("#expRemain").textContent = Math.max(0, need-EXP);
+  }
+
+  function gainExp(amount){
+    EXP += amount;
+    totalExpEarned += amount;
+    while(EXP >= expForLevel(LV)){
+      EXP -= expForLevel(LV);
+      LV += 1;
+      toast(`LEVEL UP ▶ LV ${LV}!`);
+    }
+    refreshBars();
+    saveState();
+  }
+
+  // ---------- toggle quest ----------
+  function toggle(id){
+    const q = QUESTS.find(x=>x.id===id);
+    if(!q || q.done) return;       // completing only (one-way like a real "done")
+    q.done = true;
+    registerCompletionForStreak();   // S3-2: today counts as an achievement day
+    updateStreakDisplay();
+    gainExp(q.exp);
+    renderQuests();
+    renderStatus();
+
+    if(q.boss && q.skill){
+      // grant skill
+      if(!skills.includes(q.skill)){
+        skills.push(q.skill);
+        renderSkills();
+        checkFuseReady();
+      }
+      // 5.1 cut-in
+      setTimeout(()=>playCutIn(q.skill), reduce?0:260);
+    }else{
+      toast(`+${q.exp} EXP 獲得`);
+    }
+    saveState();
+  }
+
+  // ---------- skills ----------
+  const grid = $("#skillGrid");
+  function renderSkills(){
+    $("#skillCnt").textContent = (skills.length + fusedIds.length) + " GOT";
+    if(skills.length===0 && fusedIds.length===0){
+      grid.innerHTML = `<div class="skill-empty">― まだスキルは未獲得。BOSSクエストを討伐せよ ―</div>`;
+      renderStatus();
+      return;
+    }
+    grid.innerHTML = "";
+    // evolved skills first
+    fusedIds.forEach(name=>{
+      const r = FUSE_RECIPES.find(x=>x.result===name);
+      const c = document.createElement("div");
+      c.className="skill-chip fused";
+      c.innerHTML = `<span class="lb">★ EVOLVED SKILL</span><span class="nm">${esc(name)}</span><span class="desc">${esc(r?r.desc:"")}</span>`;
+      grid.appendChild(c);
+    });
+    skills.forEach(s=>{
+      const consumed = isConsumed(s);
+      const c = document.createElement("div");
+      c.className = "skill-chip" + (consumed ? " consumed" : "");
+      c.innerHTML = `<span class="lb">${consumed?"USED ▶ FUSED":"UNIQUE SKILL"}</span><span class="nm">${esc(s)}</span><span class="desc">${esc(SKILL_INFO[s]||"")}</span>`;
+      grid.appendChild(c);
+    });
+    renderStatus();
+  }
+
+  function checkFuseReady(){
+    const btn = $("#fuseBtn");
+    const ready = getReadyRecipe();
+    const allFused = FUSE_RECIPES.every(isFused);
+    if(ready){
+      btn.disabled=false; btn.classList.add("ready"); $("#fuseLabel").textContent="スキル統合";
+    }else if(allFused){
+      btn.disabled=true; btn.classList.remove("ready"); $("#fuseLabel").textContent="統合済";
+    }else{
+      const p = fuseProgress();
+      btn.disabled=true; btn.classList.remove("ready");
+      $("#fuseLabel").textContent = `統合 ${p.have}/${p.total||FUSE_RECIPES[0].materials.length}`;
+    }
+  }
+
+  // ---------- status / attributes ----------
+  function getRank(){
+    if(fusedIds.length>0){
+      const latest = fusedIds[fusedIds.length-1];
+      return {label:latest, desc:"基礎スキルを統べ、進化を成し遂げた現状の頂点称号。"};
+    }
+    if(skills.length>=3) return {label:"トリプルスレット", desc:"3つの基礎スキルが揃った。統合の条件を満たしている。"};
+    if(skills.length===2) return {label:"急成長中の実装者", desc:"着実にスキルを積み重ねている。次のBOSSを探せ。"};
+    if(skills.length===1) return {label:"駆け出しの実装者", desc:"最初のBOSSを討伐した。ここからが本番。"};
+    return {label:"無冠の冒険者", desc:"まだ何も成し遂げていない。最初の一歩を踏み出せ。"};
+  }
+
+  function renderStatus(){
+    const dailyTotal = QUESTS.filter(q=>!q.boss).length;
+    const dailyDone  = QUESTS.filter(q=>!q.boss && q.done).length;
+    const bossTotal  = QUESTS.filter(q=>q.boss).length;
+    const bossDone   = QUESTS.filter(q=>q.boss && q.done).length;
+
+    const actionPct = dailyTotal ? Math.round(dailyDone/dailyTotal*100) : 0;
+    const bossPct   = bossTotal  ? Math.round(bossDone/bossTotal*100)   : 0;
+    const growthPct = Math.min(100, Math.round(totalExpEarned/1000*100));
+
+    $("#attrActionFill").style.width = actionPct + "%";
+    $("#attrActionNum").textContent  = actionPct + "%";
+    $("#attrBossFill").style.width   = bossPct + "%";
+    $("#attrBossNum").textContent    = bossPct + "%";
+    $("#attrGrowthFill").style.width = growthPct + "%";
+    $("#attrGrowthNum").textContent  = growthPct + "%";
+
+    const r = getRank();
+    $("#rankLabel").textContent = `称号：${r.label}`;
+    $("#rankDesc").textContent  = r.desc;
+  }
+
+  // ---------- tab navigation ----------
+  const viewQuest    = $("#viewQuest");
+  const viewStatus   = $("#viewStatus");
+  const tabQuestBtn  = $("#tabQuestBtn");
+  const tabStatusBtn = $("#tabStatusBtn");
+  function showTab(name){
+    const isQuest = name === "quest";
+    viewQuest.classList.toggle("active", isQuest);
+    viewStatus.classList.toggle("active", !isQuest);
+    tabQuestBtn.classList.toggle("active", isQuest);
+    tabQuestBtn.setAttribute("aria-selected", String(isQuest));
+    tabStatusBtn.classList.toggle("active", !isQuest);
+    tabStatusBtn.setAttribute("aria-selected", String(!isQuest));
+    if(!isQuest) renderStatus();
+  }
+  tabQuestBtn.addEventListener("click", ()=>showTab("quest"));
+  tabStatusBtn.addEventListener("click", ()=>showTab("status"));
+
+  // ---------- 5.1 cut-in ----------
+  const cutOv = $("#cutOverlay");
+  function playCutIn(skill){
+    $("#cutSkillName").textContent = `『${skill}』`;
+    cutOv.classList.add("show");
+    // restart zoom animation
+    const c = cutOv.querySelector(".cutin");
+    c.style.animation="none"; void c.offsetWidth; c.style.animation="";
+    const hex = cutOv.querySelector(".hexgrid");
+    hex.style.animation="none"; void hex.offsetWidth; hex.style.animation="";
+  }
+  function closeCutIn(){ cutOv.classList.remove("show"); toast("スキルを習得した"); }
+  cutOv.addEventListener("click", closeCutIn);
+
+  // ---------- 5.2 fusion ----------
+  const fuseOv = $("#fuseOverlay");
+  const announce = $("#announce");
+  const matL = $("#matLeft");
+  const matR = $("#matRight");
+  const flash = $("#flash");
+  const newSkill = $("#newSkill");
+  const fuseHex = $("#fuseHex");
+  const fuseHint = $("#fuseHint");
+  let fusing = false;
+  let pendingReal = false;
+  let activeRecipe = null;   // the recipe currently being fused (S5-2)
+
+  function resetFuseStage(){
+    [announce].forEach(e=>e.classList.remove("in"));
+    [matL,matR].forEach(e=>e.classList.remove("in","crash"));
+    flash.classList.remove("go");
+    newSkill.classList.remove("drop");
+    fuseHint.style.display="none";
+    fuseHex.style.opacity="";
+  }
+
+  // real=true -> genuine fusion (needs a ready recipe, grants EXP, one-time per recipe)
+  // real=false -> standalone preview, always playable, doesn't touch game state
+  function runFusion(real){
+    if(fusing) return;
+    const recipe = real ? getReadyRecipe() : FUSE_RECIPES[0];
+    if(real && !recipe) return;   // nothing ready to fuse
+    activeRecipe = recipe;
+    pendingReal = real;
+    fusing = true;
+    matL.querySelector(".mn").textContent = recipe.materials[0];
+    matR.querySelector(".mn").textContent = recipe.materials[1];
+    $("#fuseName").textContent = recipe.result;
+    resetFuseStage();
+    fuseOv.classList.add("show");
+
+    const T = reduce ? 0.1 : 1;
+    // phase1 announce
+    setTimeout(()=>announce.classList.add("in"), 60);
+    // phase2 materials slide in
+    setTimeout(()=>{ matL.classList.add("in"); matR.classList.add("in"); }, 900*T);
+    // phase3 crash + solid flash
+    setTimeout(()=>{ matL.classList.add("crash"); matR.classList.add("crash"); }, 1900*T);
+    setTimeout(()=>{ flash.classList.add("go"); }, 2100*T);
+    // phase4 new skill drops + grid turns yellow
+    setTimeout(()=>{
+      announce.classList.remove("in");
+      newSkill.classList.add("drop");
+      // grid already yellow (svg stroke yellow); intensify
+      fuseHex.style.opacity=".4";
+    }, 2500*T);
+    setTimeout(()=>{ fuseHint.style.display="block"; }, 3200*T);
+  }
+
+  function finishFusion(){
+    if(!fusing) return;
+    fuseOv.classList.remove("show");
+    fusing = false;
+    if(pendingReal && activeRecipe && !isFused(activeRecipe)){
+      fusedIds.push(activeRecipe.result);
+      gainExp(activeRecipe.exp);   // gainExp() already persists
+      renderSkills();
+      checkFuseReady();
+      saveState();
+      toast(`進化！ ${activeRecipe.result} を獲得`);
+    }else if(!pendingReal){
+      toast("演出プレビュー終了");
+    }
+    pendingReal = false;
+    activeRecipe = null;
+  }
+  fuseOv.addEventListener("click", ()=>{ if(fuseHint.style.display==="block") finishFusion(); });
+  $("#fuseBtn").addEventListener("click", ()=>runFusion(true));
+  $("#previewFuseBtn").addEventListener("click", ()=>runFusion(false));
+  $("#previewCutBtn").addEventListener("click", ()=>playCutIn("プレビュー・スキル"));
+
+  // ---------- toast ----------
+  let toastTimer;
+  function toast(msg){
+    const t = $("#toast");
+    $("#toastMsg").textContent = msg;
+    t.classList.remove("show"); void t.offsetWidth; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>t.classList.remove("show"), 2300);
+  }
+
+  // ---------- quest editor modal (S2-1) ----------
+  const questModal = $("#questModal");
+  const questForm  = $("#questForm");
+  const fTitle = $("#fTitle"), fKind = $("#fKind"), fExp = $("#fExp");
+  const fBoss = $("#fBoss"), fSkill = $("#fSkill"), fSkillWrap = $("#fSkillWrap");
+  const fHabit = $("#fHabit");
+  let editingId = null;   // null = add mode; id = edit mode (used by S2-2)
+
+  function genQuestId(){
+    return "q" + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36);
+  }
+  function syncBossField(){
+    fSkillWrap.style.display = fBoss.checked ? "block" : "none";
+  }
+  fBoss.addEventListener("change", syncBossField);
+
+  function openQuestModal(quest){
+    editingId = quest ? quest.id : null;
+    $("#modalTitle").textContent = quest ? "EDIT QUEST" : "NEW QUEST";
+    $("#modalSaveLabel").textContent = quest ? "更新" : "登録";
+    fTitle.value = quest ? quest.title : "";
+    fKind.value  = quest ? quest.kind  : "DAILY";
+    fExp.value   = quest ? quest.exp   : 30;
+    fBoss.checked= quest ? !!quest.boss : false;
+    fHabit.checked= quest ? !!quest.habit : false;
+    fSkill.value = quest && quest.skill ? quest.skill : "";
+    [fTitle,fSkill].forEach(el=>el.classList.remove("invalid"));
+    syncBossField();
+    questModal.classList.add("show");
+    setTimeout(()=>fTitle.focus(), 30);
+  }
+  function closeQuestModal(){
+    questModal.classList.remove("show");
+    editingId = null;
+  }
+
+  // delete (S2-2). Earned EXP/level from a past completion is kept (records an achievement);
+  // attribute bars recompute from the current quest set.
+  function deleteQuest(id){
+    const q = QUESTS.find(x=>x.id===id);
+    if(!q) return;
+    if(!window.confirm(`「${q.title}」を削除しますか？`)) return;
+    QUESTS = QUESTS.filter(x=>x.id!==id);
+    saveState();
+    renderQuests(); renderStatus();
+    toast("クエストを削除した");
+  }
+
+  questForm.addEventListener("submit", e=>{
+    e.preventDefault();
+    const title = fTitle.value.trim();
+    if(!title){ fTitle.classList.add("invalid"); fTitle.focus(); return; }
+    const boss = fBoss.checked;
+    let skill = fSkill.value.trim();
+    if(boss && !skill){ fSkill.classList.add("invalid"); fSkill.focus(); return; }
+    let exp = parseInt(fExp.value, 10);
+    if(!Number.isFinite(exp) || exp < 1) exp = 1;
+    if(exp > 9999) exp = 9999;
+    const habit = fHabit.checked;
+    const kind = fKind.value.trim() || (boss ? "BOSS" : "DAILY");
+
+    if(editingId){
+      // edit mode (wired in S2-2)
+      const q = QUESTS.find(x=>x.id===editingId);
+      if(q){ q.title=title; q.kind=kind; q.exp=exp; q.boss=boss; q.skill=boss?skill:undefined; q.habit=habit; }
+    }else{
+      QUESTS.push({
+        id:genQuestId(), kind, title, exp,
+        boss, skill: boss ? skill : undefined, mat:false, habit, done:false
+      });
+    }
+    saveState();
+    renderQuests(); renderStatus();
+    closeQuestModal();
+    toast(editingId ? "クエストを更新した" : "クエストを追加した");
+  });
+
+  $("#addQuestBtn").addEventListener("click", ()=>openQuestModal(null));
+  $("#modalCancel").addEventListener("click", closeQuestModal);
+  questModal.addEventListener("click", e=>{ if(e.target===questModal) closeQuestModal(); });
+  document.addEventListener("keydown", e=>{
+    if(e.key==="Escape" && questModal.classList.contains("show")) closeQuestModal();
+  });
+
+  // ---------- reset (S1-2) ----------
+  $("#resetBtn").addEventListener("click", ()=>{
+    // confirm to avoid wiping progress by accident
+    if(!window.confirm("進捗をすべて初期化します。よろしいですか？")) return;
+    QUESTS = clone(DEFAULT_QUESTS);
+    LV=7; EXP=0; totalExpEarned=0; skills.length=0; fusedIds.length=0; fusing=false;
+    streak=0; lastCompletionDate=null; lastSeenDate=todayStr();
+    saveState();   // persist the cleared state so a reload stays reset
+    renderQuests(); renderSkills(); checkFuseReady(); refreshBars(); updateStreakDisplay(); renderStatus();
+    toast("クエストをリセットした");
+  });
+
+  // ---------- init ----------
+  const saved = loadState();   // S1-1: restore prior session if present
+  if(saved) applyState(saved);
+  rolloverIfNewDay();          // S3-1: reset habit quests / break streak if the day changed
+  renderQuests();
+  renderSkills();
+  checkFuseReady();
+  refreshBars(false);
+  updateStreakDisplay();
+  renderStatus();
+})();
+</script>
+</body>
+</html>
