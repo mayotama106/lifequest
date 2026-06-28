@@ -76,6 +76,19 @@
   }
   .brand-tag b{display:inline-block;transform:skewX(var(--unskew));}
 
+  /* crystal counter (E7) — cyan to distinguish from yellow EXP / magenta streak */
+  .hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+  .crystal{
+    background:var(--cyan);color:var(--black);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:14px;
+    padding:4px 12px;transform:skewX(var(--skew));box-shadow:3px 3px 0 var(--black);
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  .crystal .ico{display:inline-block;transform:skewX(var(--unskew));font-size:13px;}
+  .crystal b{display:inline-block;transform:skewX(var(--unskew));font-size:17px;line-height:1;}
+  .crystal.pop{animation:crystalPop .4s cubic-bezier(.2,1.5,.4,1);}
+  @keyframes crystalPop{0%{transform:skewX(var(--skew)) scale(1);}40%{transform:skewX(var(--skew)) scale(1.25);}100%{transform:skewX(var(--skew)) scale(1);}}
+
   .stat-strip{
     display:flex;gap:10px;margin-top:16px;align-items:stretch;
   }
@@ -498,7 +511,10 @@
   <header>
     <div class="brand-row">
       <div class="brand">LIFE<span>QUEST</span></div>
-      <div class="brand-tag"><b>EXTREME ACTION</b></div>
+      <div class="hdr-right">
+        <div class="crystal" id="crystalChip" title="クリスタル（タスクで獲得）"><span class="ico">◆</span><b id="crystalVal">0</b></div>
+        <div class="brand-tag"><b>EXTREME ACTION</b></div>
+      </div>
     </div>
 
     <div class="stat-strip">
@@ -708,6 +724,10 @@
   const EXP_CONFIG = { base:500, perLevel:0 };   // base + perLevel*(lv-1); perLevel=0 -> flat 500
   function expForLevel(lv){ return Math.max(1, EXP_CONFIG.base + EXP_CONFIG.perLevel*(lv-1)); }
 
+  // crystal economy config (E7 / S7-1): earned by real-world task progress, fuels gacha later
+  const CRYSTAL_CONFIG = { normal:5, boss:30, fusion:50, levelUp:20, streakDailyMult:2 };
+  let crystals = 0;
+
   let LV = 7;
   let EXP = 0;
   const skills = [];          // acquired skill names
@@ -759,7 +779,7 @@
   function serializeState(){
     return {
       version: STATE_VERSION,
-      LV, EXP, totalExpEarned,
+      LV, EXP, totalExpEarned, crystals,
       fusedIds: fusedIds.slice(),
       streak, lastCompletionDate, lastSeenDate,
       skills: skills.slice(),
@@ -799,6 +819,7 @@
     LV = Number.isFinite(s.LV) ? s.LV : 7;
     EXP = Number.isFinite(s.EXP) ? s.EXP : 0;
     totalExpEarned = Number.isFinite(s.totalExpEarned) ? s.totalExpEarned : 0;
+    crystals = Number.isFinite(s.crystals) ? s.crystals : 0;
     fusedIds.length = 0;
     if(Array.isArray(s.fusedIds)) s.fusedIds.forEach(x=>{ if(typeof x==="string") fusedIds.push(x); });
     else if(s.fused) fusedIds.push(FUSE_RECIPES[0].result);   // migrate old boolean save
@@ -832,15 +853,17 @@
   }
 
   // S3-2: count an achievement day on the first completion of each day
+  // returns true if this is the first completion of a new achievement day
   function registerCompletionForStreak(){
     const today = todayStr();
-    if(lastCompletionDate === today) return;   // already counted today
+    if(lastCompletionDate === today) return false;   // already counted today
     if(lastCompletionDate && dayDiff(lastCompletionDate, today) === 1){
       streak += 1;                              // consecutive day
     }else{
       streak = 1;                              // first ever, or a gap -> restart
     }
     lastCompletionDate = today;
+    return true;
   }
 
   // S3-1 + S3-2: reset habit quests when the day changes; break the streak on a missed day
@@ -913,10 +936,28 @@
     while(EXP >= expForLevel(LV)){
       EXP -= expForLevel(LV);
       LV += 1;
+      gainCrystals(CRYSTAL_CONFIG.levelUp);   // E7: level-up crystal bonus
       toast(`LEVEL UP ▶ LV ${LV}!`);
     }
     refreshBars();
     saveState();
+  }
+
+  // ---------- crystals (E7 / S7-1) ----------
+  function gainCrystals(amount){
+    if(!amount) return;
+    crystals += amount;
+    updateCrystalDisplay(true);
+    saveState();
+  }
+  function updateCrystalDisplay(pulse){
+    const el = $("#crystalVal");
+    if(!el) return;
+    el.textContent = crystals;
+    if(pulse){
+      const chip = $("#crystalChip");
+      if(chip){ chip.classList.remove("pop"); void chip.offsetWidth; chip.classList.add("pop"); }
+    }
   }
 
   // ---------- toggle quest ----------
@@ -924,9 +965,14 @@
     const q = QUESTS.find(x=>x.id===id);
     if(!q || q.done) return;       // completing only (one-way like a real "done")
     q.done = true;
-    registerCompletionForStreak();   // S3-2: today counts as an achievement day
+    const newDay = registerCompletionForStreak();   // S3-2: today counts as an achievement day
     updateStreakDisplay();
+    // E7: streak daily bonus on the first completion of a new achievement day
+    if(newDay) gainCrystals(streak * CRYSTAL_CONFIG.streakDailyMult);
     gainExp(q.exp);
+    // E7: per-task crystals
+    const taskCrystal = q.boss ? CRYSTAL_CONFIG.boss : CRYSTAL_CONFIG.normal;
+    gainCrystals(taskCrystal);
     renderQuests();
     renderStatus();
 
@@ -940,7 +986,7 @@
       // 5.1 cut-in
       setTimeout(()=>playCutIn(q.skill), reduce?0:260);
     }else{
-      toast(`+${q.exp} EXP 獲得`);
+      toast(`+${q.exp} EXP / +${taskCrystal} ◆`);
     }
     saveState();
   }
@@ -1116,6 +1162,7 @@
     if(pendingReal && activeRecipe && !isFused(activeRecipe)){
       fusedIds.push(activeRecipe.result);
       gainExp(activeRecipe.exp);   // gainExp() already persists
+      gainCrystals(CRYSTAL_CONFIG.fusion);   // E7: fusion crystal bonus
       renderSkills();
       checkFuseReady();
       saveState();
@@ -1230,10 +1277,10 @@
     // confirm to avoid wiping progress by accident
     if(!window.confirm("進捗をすべて初期化します。よろしいですか？")) return;
     QUESTS = clone(DEFAULT_QUESTS);
-    LV=7; EXP=0; totalExpEarned=0; skills.length=0; fusedIds.length=0; fusing=false;
+    LV=7; EXP=0; totalExpEarned=0; crystals=0; skills.length=0; fusedIds.length=0; fusing=false;
     streak=0; lastCompletionDate=null; lastSeenDate=todayStr();
     saveState();   // persist the cleared state so a reload stays reset
-    renderQuests(); renderSkills(); checkFuseReady(); refreshBars(); updateStreakDisplay(); renderStatus();
+    renderQuests(); renderSkills(); checkFuseReady(); refreshBars(); updateStreakDisplay(); updateCrystalDisplay(); renderStatus();
     toast("クエストをリセットした");
   });
 
@@ -1246,6 +1293,7 @@
   checkFuseReady();
   refreshBars(false);
   updateStreakDisplay();
+  updateCrystalDisplay();
   renderStatus();
 })();
 </script>

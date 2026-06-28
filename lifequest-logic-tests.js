@@ -117,6 +117,41 @@ section("fusion recipes");
   A(migrate({ fused: true }).length === 1, "legacy fused:true migrates");
 }
 
+/* ============ 4b. クリスタル経済 (E7 / S7-1) ============ */
+section("crystal economy");
+{
+  const CRYSTAL_CONFIG = { normal: 5, boss: 30, fusion: 50, levelUp: 20, streakDailyMult: 2 };
+  let crystals = 0;
+  const gainCrystals = a => { if (a) crystals += a; };
+
+  // simulate completing a normal quest (also first achievement day -> streak bonus)
+  let streak = 1; // after registerCompletion on a fresh day
+  gainCrystals(streak * CRYSTAL_CONFIG.streakDailyMult); // streak daily bonus
+  gainCrystals(CRYSTAL_CONFIG.normal);                   // per-task
+  A(crystals === 2 + 5, "daily quest: streak bonus(2) + normal(5) = 7");
+
+  // boss quest on the same day (no new streak bonus)
+  gainCrystals(CRYSTAL_CONFIG.boss);
+  A(crystals === 7 + 30, "boss quest adds 30 -> 37");
+
+  // a level-up during exp gain
+  gainCrystals(CRYSTAL_CONFIG.levelUp);
+  A(crystals === 37 + 20, "level-up adds 20 -> 57");
+
+  // a fusion
+  gainCrystals(CRYSTAL_CONFIG.fusion);
+  A(crystals === 57 + 50, "fusion adds 50 -> 107");
+
+  // zero / falsy guard
+  gainCrystals(0); gainCrystals(undefined);
+  A(crystals === 107, "no-op on 0/undefined");
+
+  // persistence round-trip (apply default)
+  const apply = s => Number.isFinite(s.crystals) ? s.crystals : 0;
+  A(apply({ crystals: 107 }) === 107, "crystals persisted");
+  A(apply({}) === 0, "missing crystals -> 0 (legacy save)");
+}
+
 /* ============ 5. HTMLエスケープ (S6-1) ============ */
 section("html escape");
 {
