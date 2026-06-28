@@ -222,11 +222,11 @@
   .exp-tag small{font-size:9px;}
 
   /* ---------- tab navigation ---------- */
-  .tabbar{display:flex;gap:8px;padding:0 20px;margin-top:18px;position:relative;z-index:2;}
+  .tabbar{display:flex;gap:6px;padding:0 20px;margin-top:18px;position:relative;z-index:2;}
   .tab{
     flex:1;border:2px solid var(--cyan);cursor:pointer;background:var(--black);
-    color:var(--cyan);font-family:"Anton",sans-serif;font-style:italic;font-size:14px;
-    padding:11px 6px;transform:skewX(var(--skew));box-shadow:4px 4px 0 var(--black);
+    color:var(--cyan);font-family:"Anton",sans-serif;font-style:italic;font-size:12px;
+    padding:11px 3px;transform:skewX(var(--skew));box-shadow:4px 4px 0 var(--black);
     transition:background .15s ease,color .15s ease,border-color .15s ease;
   }
   .tab span{display:inline-block;transform:skewX(var(--unskew));}
@@ -591,6 +591,68 @@
   .rcard .rnew{display:inline-block;transform:skewX(var(--unskew));background:var(--magenta);color:var(--white);font-family:"Anton",sans-serif;font-style:italic;font-size:8px;padding:1px 5px;margin-top:5px;}
   .gacha-result.single .rcard .rnew{font-size:12px;padding:2px 10px;margin-top:10px;}
 
+  /* ---------- team & battle (E9 / E11) ---------- */
+  .team-slots{padding:8px 20px 0;position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .team-slot{border:2px solid #2a2a2a;background:#101010;padding:8px 8px;min-height:64px;text-align:center;}
+  .team-slot.main{border-color:var(--magenta);}
+  .team-slot.r5{border-color:var(--yellow);background:#141000;}
+  .team-slot.r4{border-color:var(--magenta);}
+  .team-slot.r3{border-color:var(--cyan);}
+  .team-slot.empty{border-style:dashed;}
+  .ts-k{display:block;font-family:"Anton",sans-serif;font-style:italic;font-size:9px;color:var(--cyan);}
+  .team-slot.main .ts-k{color:var(--magenta);}
+  .team-slot.r5 .ts-k{color:var(--yellow);}
+  .ts-nm{display:block;font-weight:900;font-size:11px;color:var(--white);line-height:1.15;margin:3px 0;word-break:break-word;}
+  .team-slot.empty .ts-nm{color:var(--grey);}
+  .ts-st{display:block;font-family:"Anton",sans-serif;font-style:italic;font-size:9px;color:#9a9a9a;}
+  .team-cand-lab{padding:14px 20px 6px;font-family:"Anton",sans-serif;font-style:italic;font-size:11px;color:var(--cyan);position:relative;z-index:2;}
+  .team-cand{padding:0 20px;position:relative;z-index:2;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .cand{cursor:pointer;text-align:left;border:2px solid var(--grey);background:#101010;padding:10px 10px;transform:skewX(var(--skew));}
+  .cand>*{display:block;transform:skewX(var(--unskew));}
+  .cand.r5{border-color:var(--yellow);}
+  .cand.r4{border-color:var(--magenta);}
+  .cand.r3{border-color:var(--cyan);}
+  .cand.in{box-shadow:4px 4px 0 var(--magenta);}
+  .cand-st{font-family:"Anton",sans-serif;font-style:italic;font-size:11px;color:var(--grey);}
+  .cand.r5 .cand-st{color:var(--yellow);} .cand.r4 .cand-st{color:var(--magenta);} .cand.r3 .cand-st{color:var(--cyan);}
+  .cand-nm{font-weight:900;font-size:12px;color:var(--white);line-height:1.2;margin:3px 0;word-break:break-word;}
+  .cand-tag{font-family:"Anton",sans-serif;font-style:italic;font-size:10px;color:var(--cyan);}
+  .cand.in .cand-tag{color:var(--magenta);}
+
+  .stage-list{padding:8px 20px 0;position:relative;z-index:2;display:flex;flex-direction:column;gap:12px;}
+  .stage-card{display:flex;align-items:center;gap:10px;border:2px solid #2a2a2a;background:#101010;padding:12px 12px;transform:skewX(var(--skew));}
+  .stage-card>*{transform:skewX(var(--unskew));}
+  .stage-info{flex:1;min-width:0;}
+  .stage-nm{display:block;font-weight:900;font-size:14px;color:var(--white);}
+  .stage-meta{display:block;font-family:"Anton",sans-serif;font-style:italic;font-size:11px;color:var(--grey);margin-top:3px;}
+  .stage-meta .cl{color:var(--magenta);}
+  .stage-go{flex:0 0 auto;cursor:pointer;border:none;background:var(--yellow);color:var(--black);font-family:"Anton",sans-serif;font-style:italic;font-size:14px;padding:10px 16px;box-shadow:3px 3px 0 var(--black);}
+  .stage-go:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--black);}
+
+  /* battle overlay */
+  .battle-screen{position:relative;z-index:5;width:94%;max-width:420px;}
+  .bt-stage{font-family:"Anton",sans-serif;font-style:italic;font-size:16px;color:var(--yellow);text-align:center;transform:skewX(var(--skew));margin-bottom:10px;}
+  .bf-side{display:flex;flex-direction:column;gap:6px;}
+  .bf-vs{font-family:"Anton",sans-serif;font-style:italic;font-size:18px;color:var(--magenta);text-align:center;margin:8px 0;}
+  .bunit{background:var(--black);border:2px solid #2a2a2a;padding:6px 10px;}
+  .bunit.enemy{border-color:var(--magenta);}
+  .bunit.ally{border-color:var(--cyan);}
+  .bunit.ally.main{border-color:var(--yellow);}
+  .bunit.dead{opacity:.35;}
+  .bu-nm{font-weight:900;font-size:11px;color:var(--white);}
+  .bu-bar{height:8px;background:#222;margin-top:4px;border:1px solid var(--black);overflow:hidden;}
+  .bu-fill{height:100%;background:var(--cyan);transition:width .25s linear;}
+  .bunit.enemy .bu-fill{background:var(--magenta);}
+  .bunit.ally.main .bu-fill{background:var(--yellow);}
+  .battle-log{margin-top:10px;height:88px;overflow-y:auto;background:rgba(0,0,0,.6);border:2px solid #222;padding:6px 8px;}
+  .bt-line{font-size:11px;font-weight:700;color:#d8d8d8;line-height:1.5;}
+  .battle-result{margin-top:12px;text-align:center;border:4px solid var(--yellow);background:var(--black);padding:14px;box-shadow:7px 7px 0 var(--black);transform:skewX(var(--skew));}
+  .battle-result.lose{border-color:var(--grey);}
+  .battle-result>*{display:block;transform:skewX(var(--unskew));}
+  .br-head{font-family:"Anton",sans-serif;font-style:italic;font-size:30px;color:var(--yellow);}
+  .battle-result.lose .br-head{color:var(--grey);}
+  .br-rew{font-family:"Anton",sans-serif;font-style:italic;font-size:14px;color:var(--cyan);margin-top:6px;}
+
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
   }
@@ -634,6 +696,7 @@
     <button class="tab active" id="tabQuestBtn" role="tab" aria-selected="true" type="button"><span>QUEST</span></button>
     <button class="tab" id="tabStatusBtn" role="tab" aria-selected="false" type="button"><span>STATUS</span></button>
     <button class="tab" id="tabGachaBtn" role="tab" aria-selected="false" type="button"><span>GACHA</span></button>
+    <button class="tab" id="tabBattleBtn" role="tab" aria-selected="false" type="button"><span>BATTLE</span></button>
   </nav>
 
   <main id="viewQuest" class="view active">
@@ -737,6 +800,21 @@
     <div class="comp-grid" id="compGrid"></div>
   </main>
 
+  <main id="viewBattle" class="view">
+    <div class="gacha-banner">
+      <div class="gb-title">BATTLE</div>
+      <div class="gb-sub">編成して挑め。現実で鍛えた自分と仲間で、怠惰を討つ。</div>
+    </div>
+
+    <div class="sec-head" style="margin-top:16px;"><h2 style="font-size:18px;">TEAM 編成</h2></div>
+    <div class="team-slots" id="teamSlots"></div>
+    <div class="team-cand-lab">編成候補（タップで入替）</div>
+    <div class="team-cand" id="teamCand"></div>
+
+    <div class="sec-head" style="margin-top:20px;"><h2 style="font-size:18px;">STAGES</h2></div>
+    <div class="stage-list" id="stageList"></div>
+  </main>
+
 </div>
 
 <!-- bottom dock -->
@@ -789,6 +867,20 @@
   <div class="warntape t1"><div class="tt"><span>＜召喚＞ SUMMON ＜召喚＞ 仲間が応じた ＜召喚＞ SUMMON ＜召喚＞ 仲間が応じた ＜召喚＞</span></div></div>
   <div class="gacha-result" id="gachaResult"></div>
   <div class="cut-hint" id="gachaHint" style="display:none">― TAP TO CLOSE ―</div>
+</div>
+
+<!-- ===== battle overlay (E11) ===== -->
+<div class="overlay" id="battleOverlay" role="alertdialog" aria-label="バトル">
+  <div class="hexgrid"></div>
+  <div class="battle-screen">
+    <div class="bt-stage" id="btStageName">STAGE</div>
+    <div class="bf-side enemies" id="bfEnemies"></div>
+    <div class="bf-vs">VS</div>
+    <div class="bf-side allies" id="bfAllies"></div>
+    <div class="battle-log" id="btLog"></div>
+    <div class="battle-result" id="btResult" style="display:none"></div>
+  </div>
+  <div class="cut-hint" id="btHint" style="display:none">― TAP TO CLOSE ―</div>
 </div>
 
 <!-- ===== quest add/edit modal (S2-1) ===== -->
@@ -932,6 +1024,48 @@
   // all skill names the player owns (unique + fused), for equip eligibility
   const allSkillNames = () => skills.concat(fusedIds);
 
+  // ---------- team & battle (E9 / E11) ----------
+  const TEAM_COMPANION_SLOTS = 2;     // Phase1: main + 2 companions = 3-unit team
+  let team = [null, null];            // companion def ids (or null) per slot
+  const clearedStages = {};           // { stageId: true } -> first-clear reward already given
+
+  // companion battle stats derived from rarity (level fixed at 1 for Phase1)
+  const COMP_BATTLE = {
+    5: { hp:1400, atk:170, spd:115 },
+    4: { hp:1000, atk:130, spd:105 },
+    3: { hp:720,  atk:95,  spd:95  },
+  };
+  function companionUnit(defId){
+    const d = COMPANION_DEFS.find(x=>x.id===defId);
+    if(!d) return null;
+    const b = COMP_BATTLE[d.rarity] || COMP_BATTLE[3];
+    return { name:d.name, hp:b.hp, maxHp:b.hp, atk:b.atk, spd:b.spd, element:d.element, side:"ally", rarity:d.rarity };
+  }
+  // main char as a battle unit; equipped techs add an attack bonus (reinforces the loop)
+  function mainUnit(){
+    const st = mainCharStats();
+    const techBonus = Math.round(equipped.reduce((s,n)=>s + skillTech(n).power, 0) / 4);
+    return { name:"自分（あなた）", hp:st.hp, maxHp:st.hp, atk:st.atk + techBonus, spd:st.spd, element:"無", side:"ally", main:true };
+  }
+
+  // stages: enemy teams + first-clear crystal reward
+  const STAGES = [
+    { id:"s1", name:"STAGE 1 ・ 怠惰の沼", reward:30, enemies:[
+      { name:"スライム", hp:600, atk:70, spd:90 },
+      { name:"先延ばし鬼", hp:800, atk:90, spd:85 },
+    ]},
+    { id:"s2", name:"STAGE 2 ・ 締切の谷", reward:60, enemies:[
+      { name:"未読の群れ", hp:700, atk:95, spd:100 },
+      { name:"締切ワーム", hp:1000, atk:110, spd:95 },
+      { name:"見ないふり", hp:700, atk:90, spd:88 },
+    ]},
+    { id:"s3", name:"STAGE 3 ・ 慢心の城", reward:120, enemies:[
+      { name:"油断ナイト", hp:1200, atk:130, spd:108 },
+      { name:"自堕落キング", hp:1800, atk:155, spd:100 },
+      { name:"言い訳道化", hp:900, atk:120, spd:115 },
+    ]},
+  ];
+
   let LV = 7;
   let EXP = 0;
   const skills = [];          // acquired skill names
@@ -986,6 +1120,7 @@
       LV, EXP, totalExpEarned, crystals,
       owned: Object.assign({}, owned), pity5,
       equipped: equipped.slice(),
+      team: team.slice(), clearedStages: Object.assign({}, clearedStages),
       fusedIds: fusedIds.slice(),
       streak, lastCompletionDate, lastSeenDate,
       skills: skills.slice(),
@@ -1044,6 +1179,21 @@
     if(Array.isArray(s.equipped)){
       const ownedNames = skills.concat(fusedIds);
       s.equipped.forEach(x=>{ if(typeof x==="string" && ownedNames.includes(x) && !equipped.includes(x) && equipped.length<MAX_SKILL_SLOTS) equipped.push(x); });
+    }
+    // team (E9): keep only still-owned companions, max TEAM_COMPANION_SLOTS, no dupes
+    team = [null, null];
+    if(Array.isArray(s.team)){
+      let slot = 0;
+      s.team.forEach(id=>{
+        if(slot >= TEAM_COMPANION_SLOTS) return;
+        if(id && owned[id] && COMPANION_DEFS.find(d=>d.id===id) && !team.includes(id)){
+          team[slot++] = id;
+        }
+      });
+    }
+    Object.keys(clearedStages).forEach(k=>delete clearedStages[k]);
+    if(s.clearedStages && typeof s.clearedStages === "object"){
+      Object.keys(s.clearedStages).forEach(k=>{ if(s.clearedStages[k]) clearedStages[k] = true; });
     }
     QUESTS = s.quests.map(q=>({
       id:q.id, kind:q.kind, title:q.title, exp:Number(q.exp)||0,
@@ -1227,14 +1377,18 @@
     $("#ownedCnt").textContent = Object.keys(owned).length;
     $("#pullOneBtn").disabled = crystals < GACHA_CONFIG.costSingle;
     $("#pullTenBtn").disabled = crystals < GACHA_CONFIG.costTen;
+    // 図鑑 (S9-1): show all companions; unowned are locked silhouettes
     const grid = $("#compGrid");
-    const ownedDefs = COMPANION_DEFS.filter(d=>owned[d.id]).sort((a,b)=>b.rarity-a.rarity);
-    if(ownedDefs.length === 0){
-      grid.innerHTML = `<div class="comp-empty">― まだお供がいない。ガチャで仲間を集めよう ―</div>`;
-      return;
-    }
-    grid.innerHTML = ownedDefs.map(d=>{
+    const sorted = COMPANION_DEFS.slice().sort((a,b)=> b.rarity-a.rarity);
+    grid.innerHTML = sorted.map(d=>{
       const cnt = owned[d.id];
+      if(!cnt){
+        return `<div class="comp-card locked r${d.rarity}">
+          <span class="comp-stars">${"★".repeat(d.rarity)}</span>
+          <span class="comp-name">？？？</span>
+          <span class="comp-meta">未獲得</span>
+        </div>`;
+      }
       return `<div class="comp-card ${rarityClass(d.rarity)}">
         ${cnt>1?`<span class="comp-count">×${cnt}</span>`:""}
         <span class="comp-stars">${"★".repeat(d.rarity)}</span>
@@ -1397,6 +1551,176 @@
     wrap.innerHTML = html;
   }
 
+  // ---------- team logic (E9 / S9-2) ----------
+  function setTeamSlot(slotIdx, defId){
+    if(defId && team.includes(defId)){ toast("同じ仲間は重複編成できない"); return; }
+    team[slotIdx] = defId;
+    saveState();
+    renderBattle();
+  }
+
+  // ---------- battle simulation (E11 / S11-1) ----------
+  function buildPlayerUnits(){
+    const units = [mainUnit()];
+    team.forEach(id=>{ const u = id ? companionUnit(id) : null; if(u) units.push(u); });
+    return units;
+  }
+  function buildEnemyUnits(stage){
+    return stage.enemies.map(e=>({ name:e.name, hp:e.hp, maxHp:e.hp, atk:e.atk, spd:e.spd, element:e.element||"無", side:"enemy" }));
+  }
+  const firstAlive = arr => arr.find(u=>u.hp>0) || null;
+  // resolve a full auto battle; returns { win, log:[{txt,units}], rounds }
+  function simulateBattle(stage){
+    const allies = buildPlayerUnits();
+    const enemies = buildEnemyUnits(stage);
+    const log = [];
+    const snapshot = txt => log.push({ txt, allies:allies.map(u=>({name:u.name,hp:Math.max(0,u.hp),maxHp:u.maxHp,side:"ally",main:u.main})), enemies:enemies.map(u=>({name:u.name,hp:Math.max(0,u.hp),maxHp:u.maxHp,side:"enemy"})) });
+    snapshot("バトル開始！");
+    const order = ()=> allies.concat(enemies).filter(u=>u.hp>0).sort((a,b)=> b.spd - a.spd || (Math.random()-0.5));
+    let rounds = 0;
+    const MAX_ROUNDS = 30;
+    while(allies.some(u=>u.hp>0) && enemies.some(u=>u.hp>0) && rounds < MAX_ROUNDS){
+      rounds++;
+      for(const u of order()){
+        if(u.hp<=0) continue;
+        const foes = u.side==="ally" ? enemies : allies;
+        const target = firstAlive(foes);
+        if(!target) break;
+        const dmg = Math.max(1, Math.round(u.atk * (0.85 + Math.random()*0.3)));
+        target.hp -= dmg;
+        snapshot(`${u.name} の攻撃！ ${target.name} に ${dmg} ダメージ`);
+        if(target.hp<=0) snapshot(`${target.name} を撃破！`);
+        if(!allies.some(a=>a.hp>0) || !enemies.some(e=>e.hp>0)) break;
+      }
+    }
+    const win = allies.some(u=>u.hp>0) && !enemies.some(u=>u.hp>0);
+    snapshot(win ? "★ 勝利！ ★" : "… 敗北 …");
+    return { win, log, rounds };
+  }
+
+  // ---------- battle + team UI (E9 / E11 / S9-2 / S11-2) ----------
+  const rarOf = id => { const d = COMPANION_DEFS.find(x=>x.id===id); return d?d.rarity:3; };
+  function renderBattle(){
+    const slotsWrap = $("#teamSlots"); if(!slotsWrap) return;
+    // team slots: main (fixed) + companion slots
+    let html = `<div class="team-slot main"><span class="ts-k">MAIN</span><span class="ts-nm">自分（あなた）</span><span class="ts-st">LV${LV} / HP${mainCharStats().hp}</span></div>`;
+    for(let i=0;i<TEAM_COMPANION_SLOTS;i++){
+      const id = team[i];
+      if(id){
+        const d = COMPANION_DEFS.find(x=>x.id===id);
+        const b = COMP_BATTLE[d.rarity];
+        html += `<div class="team-slot r${d.rarity}"><span class="ts-k">${"★".repeat(d.rarity)}</span><span class="ts-nm">${esc(d.name)}</span><span class="ts-st">HP${b.hp} / ATK${b.atk}</span></div>`;
+      }else{
+        html += `<div class="team-slot empty"><span class="ts-k">お供 ${i+1}</span><span class="ts-nm">― 空き ―</span></div>`;
+      }
+    }
+    slotsWrap.innerHTML = html;
+
+    // candidate list (owned companions); tap to toggle into team
+    const cand = $("#teamCand");
+    const ownedDefs = COMPANION_DEFS.filter(d=>owned[d.id]).sort((a,b)=>b.rarity-a.rarity);
+    if(ownedDefs.length===0){
+      cand.innerHTML = `<div class="comp-empty">― お供がいない。GACHAで仲間を集めよう ―</div>`;
+    }else{
+      cand.innerHTML = ownedDefs.map(d=>{
+        const inTeam = team.includes(d.id);
+        return `<button class="cand r${d.rarity}${inTeam?" in":""}" data-id="${d.id}" type="button">
+          <span class="cand-st">${"★".repeat(d.rarity)}</span>
+          <span class="cand-nm">${esc(d.name)}</span>
+          <span class="cand-tag">${inTeam?"編成中 ✕":"編成する"}</span>
+        </button>`;
+      }).join("");
+      cand.querySelectorAll(".cand").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.dataset.id;
+          const idx = team.indexOf(id);
+          if(idx>=0){ team[idx]=null; saveState(); renderBattle(); return; }
+          const free = team.indexOf(null);
+          if(free<0){ toast("お供スロットが満杯（最大2）"); return; }
+          setTeamSlot(free, id);
+        });
+      });
+    }
+
+    // stage list
+    const stageWrap = $("#stageList");
+    stageWrap.innerHTML = STAGES.map(s=>{
+      const cleared = !!clearedStages[s.id];
+      return `<div class="stage-card">
+        <div class="stage-info"><span class="stage-nm">${esc(s.name)}</span>
+          <span class="stage-meta">敵 ${s.enemies.length}体 ・ ${cleared?'<b class="cl">CLEAR</b>':`初回 +${s.reward} ◆`}</span></div>
+        <button class="stage-go" data-stage="${s.id}" type="button"><span>出撃</span></button>
+      </div>`;
+    }).join("");
+    stageWrap.querySelectorAll(".stage-go").forEach(b=>{
+      b.addEventListener("click", ()=>startBattle(b.dataset.stage));
+    });
+  }
+
+  const btOv = $("#battleOverlay");
+  let btTimers = [];
+  function clearBtTimers(){ btTimers.forEach(clearTimeout); btTimers = []; }
+  function unitBarHtml(u){
+    const pct = Math.max(0, Math.round(u.hp/u.maxHp*100));
+    return `<div class="bunit ${u.side}${u.main?" main":""}${u.hp<=0?" dead":""}">
+      <span class="bu-nm">${esc(u.name)}</span>
+      <div class="bu-bar"><div class="bu-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }
+  function renderField(entry){
+    $("#bfAllies").innerHTML = entry.allies.map(unitBarHtml).join("");
+    $("#bfEnemies").innerHTML = entry.enemies.map(unitBarHtml).join("");
+  }
+  function startBattle(stageId){
+    if(btOv.classList.contains("show")) return;
+    const stage = STAGES.find(s=>s.id===stageId);
+    if(!stage) return;
+    const result = simulateBattle(stage);
+    clearBtTimers();
+    $("#btStageName").textContent = stage.name;
+    $("#btResult").style.display = "none";
+    $("#btResult").className = "battle-result";
+    $("#btHint").style.display = "none";
+    $("#btLog").innerHTML = "";
+    renderField(result.log[0]);
+    btOv.classList.add("show");
+
+    const step = reduce ? 12 : 520;
+    result.log.forEach((entry, i)=>{
+      btTimers.push(setTimeout(()=>{
+        renderField(entry);
+        const line = document.createElement("div");
+        line.className = "bt-line";
+        line.textContent = entry.txt;
+        const logEl = $("#btLog");
+        logEl.appendChild(line);
+        logEl.scrollTop = logEl.scrollHeight;
+      }, i*step));
+    });
+    // result + reward after playback
+    btTimers.push(setTimeout(()=>{
+      let rewardTxt = "";
+      if(result.win){
+        if(!clearedStages[stage.id]){
+          clearedStages[stage.id] = true;
+          gainCrystals(stage.reward);
+          rewardTxt = `初回クリア報酬 +${stage.reward} ◆`;
+        }else{
+          rewardTxt = "クリア済み（報酬獲得済み）";
+        }
+        saveState();
+        renderBattle();
+      }
+      const r = $("#btResult");
+      r.className = "battle-result " + (result.win?"win":"lose");
+      r.innerHTML = `<span class="br-head">${result.win?"WIN":"LOSE"}</span>${rewardTxt?`<span class="br-rew">${rewardTxt}</span>`:""}`;
+      r.style.display = "block";
+      $("#btHint").style.display = "block";
+    }, result.log.length*step + 200));
+  }
+  function closeBattle(){ clearBtTimers(); btOv.classList.remove("show"); }
+  btOv.addEventListener("click", ()=>{ if($("#btHint").style.display==="block") closeBattle(); });
+
   function checkFuseReady(){
     const btn = $("#fuseBtn");
     const ready = getReadyRecipe();
@@ -1449,8 +1773,8 @@
   }
 
   // ---------- tab navigation ----------
-  const VIEWS = { quest:"#viewQuest", status:"#viewStatus", gacha:"#viewGacha" };
-  const TABS  = { quest:"#tabQuestBtn", status:"#tabStatusBtn", gacha:"#tabGachaBtn" };
+  const VIEWS = { quest:"#viewQuest", status:"#viewStatus", gacha:"#viewGacha", battle:"#viewBattle" };
+  const TABS  = { quest:"#tabQuestBtn", status:"#tabStatusBtn", gacha:"#tabGachaBtn", battle:"#tabBattleBtn" };
   function showTab(name){
     Object.keys(VIEWS).forEach(k=>{
       const active = k === name;
@@ -1460,10 +1784,12 @@
     });
     if(name === "status") renderStatus();
     if(name === "gacha")  renderGacha();
+    if(name === "battle") renderBattle();
   }
   $("#tabQuestBtn").addEventListener("click", ()=>showTab("quest"));
   $("#tabStatusBtn").addEventListener("click", ()=>showTab("status"));
   $("#tabGachaBtn").addEventListener("click", ()=>showTab("gacha"));
+  $("#tabBattleBtn").addEventListener("click", ()=>showTab("battle"));
 
   // ---------- 5.1 cut-in ----------
   const cutOv = $("#cutOverlay");
@@ -1661,8 +1987,9 @@
     LV=7; EXP=0; totalExpEarned=0; crystals=0; skills.length=0; fusedIds.length=0; fusing=false;
     streak=0; lastCompletionDate=null; lastSeenDate=todayStr();
     Object.keys(owned).forEach(k=>delete owned[k]); pity5=0; equipped=[];
+    team=[null,null]; Object.keys(clearedStages).forEach(k=>delete clearedStages[k]);
     saveState();   // persist the cleared state so a reload stays reset
-    renderQuests(); renderSkills(); checkFuseReady(); refreshBars(); updateStreakDisplay(); updateCrystalDisplay(); renderGacha(); renderStatus();
+    renderQuests(); renderSkills(); checkFuseReady(); refreshBars(); updateStreakDisplay(); updateCrystalDisplay(); renderGacha(); renderBattle(); renderStatus();
     toast("クエストをリセットした");
   });
 
@@ -1677,6 +2004,7 @@
   updateStreakDisplay();
   updateCrystalDisplay();
   renderGacha();
+  renderBattle();
   renderStatus();
 })();
 </script>

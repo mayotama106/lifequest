@@ -231,6 +231,51 @@ section("main character & skill->tech");
   A(validate(["a", "a", "a", "a", "a", "a"], ["a"]).length === 1, "dedupe + cap on load");
 }
 
+/* ============ 4e. チーム編成 & バトル (E9 / E11) ============ */
+section("team & battle");
+{
+  const DEFS = [{ id: "a", rarity: 5 }, { id: "b", rarity: 4 }, { id: "c", rarity: 3 }, { id: "d", rarity: 3 }];
+  const owned = { a: 1, b: 1, c: 2 };
+  const SLOTS = 2;
+
+  // team load validation: only owned, no dupes, capped
+  const validate = saved => { const t = [null, null]; let slot = 0; saved.forEach(id => { if (slot >= SLOTS) return; if (id && owned[id] && DEFS.find(d => d.id === id) && !t.includes(id)) t[slot++] = id; }); return t; };
+  A(JSON.stringify(validate(["a", "b"])) === JSON.stringify(["a", "b"]), "valid team kept");
+  A(JSON.stringify(validate(["a", "a"])) === JSON.stringify(["a", null]), "dupe rejected");
+  A(JSON.stringify(validate(["z", "c"])) === JSON.stringify(["c", null]), "unowned dropped");
+  A(JSON.stringify(validate(["a", "b", "c"])) === JSON.stringify(["a", "b"]), "capped at 2");
+
+  // 図鑑 counts
+  const total = DEFS.length, ownedCount = Object.keys(owned).length;
+  A(total === 4 && ownedCount === 3, "図鑑: owned 3 / total 4");
+
+  // battle: strong allies beat weak enemies; weak allies lose to strong enemies
+  function sim(allies, enemies) {
+    allies = allies.map(u => ({ ...u })); enemies = enemies.map(u => ({ ...u }));
+    const firstAlive = a => a.find(u => u.hp > 0);
+    let rounds = 0;
+    while (allies.some(u => u.hp > 0) && enemies.some(u => u.hp > 0) && rounds < 100) {
+      rounds++;
+      const order = allies.concat(enemies).filter(u => u.hp > 0).sort((x, y) => y.spd - x.spd);
+      for (const u of order) { if (u.hp <= 0) continue; const foes = allies.includes(u) ? enemies : allies; const t = firstAlive(foes); if (!t) break; t.hp -= Math.max(1, u.atk); }
+    }
+    return allies.some(u => u.hp > 0) && !enemies.some(u => u.hp > 0);
+  }
+  A(sim([{ hp: 2000, atk: 300, spd: 120 }], [{ hp: 300, atk: 20, spd: 50 }]) === true, "strong team wins");
+  A(sim([{ hp: 200, atk: 20, spd: 50 }], [{ hp: 2000, atk: 300, spd: 120 }]) === false, "weak team loses");
+
+  // main char effective atk gets a bonus from equipped techs
+  const baseAtk = 178;
+  const techBonus = Math.round([120, 100].reduce((s, p) => s + p, 0) / 4);
+  A(baseAtk + techBonus === 178 + 55, "equipped techs boost main atk");
+
+  // first-clear reward is one-time
+  const cleared = {}; let crystals = 0; const reward = 30;
+  function clear(id) { if (!cleared[id]) { cleared[id] = true; crystals += reward; return true; } return false; }
+  A(clear("s1") === true && crystals === 30, "first clear grants reward");
+  A(clear("s1") === false && crystals === 30, "repeat clear grants nothing");
+}
+
 /* ============ 5. HTMLエスケープ (S6-1) ============ */
 section("html escape");
 {
