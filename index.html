@@ -657,6 +657,42 @@
   .battle-result.lose .br-head{color:var(--grey);}
   .br-rew{font-family:"Anton",sans-serif;font-style:italic;font-size:14px;color:var(--cyan);margin-top:6px;}
 
+  /* ---------- dungeon / train / runes (E13) ---------- */
+  .dungeon-box{margin:0 20px;background:#101010;border:2px solid var(--yellow);box-shadow:5px 5px 0 var(--black);padding:14px 16px;position:relative;z-index:2;}
+  .dg-lead{font-size:12px;color:#b9b9b9;font-weight:700;line-height:1.5;margin-bottom:12px;}
+  .dg-row{display:flex;align-items:center;gap:8px;}
+  .dg-row input{width:90px;background:#141414;border:2px solid #333;color:var(--white);font-family:"Noto Sans JP",sans-serif;font-weight:700;font-size:16px;padding:8px 10px;}
+  .dg-row input:focus{outline:none;border-color:var(--cyan);}
+  .dg-unit{font-family:"Anton",sans-serif;font-style:italic;color:var(--cyan);font-size:13px;}
+  .dg-go{margin-left:auto;cursor:pointer;border:none;background:var(--yellow);color:var(--black);font-family:"Anton",sans-serif;font-style:italic;font-size:14px;padding:10px 16px;transform:skewX(var(--skew));box-shadow:3px 3px 0 var(--black);}
+  .dg-go span{display:inline-block;transform:skewX(var(--unskew));}
+  .dg-go:active{transform:skewX(var(--skew)) translate(2px,2px);box-shadow:1px 1px 0 var(--black);}
+  .dg-inv{margin-top:12px;font-family:"Anton",sans-serif;font-style:italic;font-size:13px;color:var(--white);}
+  .dg-inv b{color:var(--yellow);}
+
+  .train-list{padding:8px 20px 0;position:relative;z-index:2;display:flex;flex-direction:column;gap:12px;}
+  .train-card{border:2px solid #2a2a2a;background:#101010;padding:12px 14px;}
+  .train-card.r5{border-color:var(--yellow);} .train-card.r4{border-color:var(--magenta);} .train-card.r3{border-color:var(--cyan);}
+  .tr-top{display:flex;justify-content:space-between;align-items:baseline;}
+  .tr-nm{font-weight:900;font-size:13px;color:var(--white);}
+  .tr-lv{font-family:"Anton",sans-serif;font-style:italic;font-size:14px;color:var(--yellow);}
+  .tr-st{font-family:"Anton",sans-serif;font-style:italic;font-size:11px;color:#9a9a9a;margin:4px 0 8px;}
+  .tr-rune{display:flex;gap:8px;margin-bottom:10px;}
+  .tr-up{width:100%;cursor:pointer;border:2px solid var(--yellow);background:transparent;color:var(--yellow);font-family:"Anton",sans-serif;font-style:italic;font-size:13px;padding:8px;}
+  .tr-up:active{background:var(--yellow);color:var(--black);}
+  .tr-up:disabled{border-color:#444;color:#555;cursor:not-allowed;}
+
+  .rune-slots{display:flex;gap:8px;}
+  .rune-slot{flex:1;cursor:pointer;border:2px dashed #3a3a3a;background:var(--black);color:var(--grey);font-family:"Anton",sans-serif;font-style:italic;font-size:11px;padding:8px 6px;}
+  .rune-slot.filled{border-style:solid;border-color:var(--cyan);color:var(--cyan);}
+  .rune-slot.filled em{font-style:normal;color:var(--magenta);font-size:9px;}
+  .rune-target{font-weight:900;font-size:13px;color:var(--white);margin-bottom:10px;}
+  .rune-inv-lab{font-family:"Anton",sans-serif;font-style:italic;font-size:11px;color:var(--cyan);margin-bottom:8px;}
+  .rune-inv{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-height:220px;overflow-y:auto;}
+  .rune-pick{cursor:pointer;border:2px solid var(--cyan);background:var(--black);color:var(--white);font-family:"Anton",sans-serif;font-style:italic;font-size:12px;padding:8px;}
+  .rune-pick.t-HP{border-color:#7dff7d;} .rune-pick.t-ATK{border-color:#ff5a3c;} .rune-pick.t-SPD{border-color:#00e5ff;}
+  .rune-pick:active{background:#1a1a1a;}
+
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
   }
@@ -740,6 +776,8 @@
         </div>
         <div class="mc-slots-lab">技スロット（獲得スキルを装備）<span id="slotCnt">0/4</span></div>
         <div class="mc-slots" id="mcSlots"></div>
+        <div class="mc-slots-lab" style="margin-top:12px;">ルーン（装備で強化）<span id="mcRuneCnt">0/2</span></div>
+        <div class="rune-slots" id="mcRuneSlots"></div>
       </div>
     </div>
 
@@ -810,7 +848,21 @@
       <div class="gb-sub">編成して挑め。現実で鍛えた自分と仲間で、怠惰を討つ。</div>
     </div>
 
-    <div class="sec-head" style="margin-top:16px;"><h2 style="font-size:18px;">TEAM 編成</h2></div>
+    <div class="sec-head" style="margin-top:16px;"><h2 style="font-size:18px;">DUNGEON 探索</h2></div>
+    <div class="dungeon-box">
+      <div class="dg-lead">タスクに集中した時間を記録 ＝ ダンジョン探索。時間分のドロップを得る。</div>
+      <div class="dg-row">
+        <input id="dgMin" type="number" min="1" max="600" value="30" aria-label="集中した分">
+        <span class="dg-unit">分</span>
+        <button class="dg-go" id="exploreBtn" type="button"><span>探索する</span></button>
+      </div>
+      <div class="dg-inv">所持 ＞ <b>◇強化石 <span id="stoneCnt">0</span></b> ／ <b>⬡ルーン <span id="runeCnt">0</span></b></div>
+    </div>
+
+    <div class="sec-head" style="margin-top:20px;"><h2 style="font-size:18px;">強化 育成</h2></div>
+    <div class="train-list" id="trainList"></div>
+
+    <div class="sec-head" style="margin-top:20px;"><h2 style="font-size:18px;">TEAM 編成</h2></div>
     <div class="team-slots" id="teamSlots"></div>
     <div class="team-cand-lab">編成候補（タップで入替）</div>
     <div class="team-cand" id="teamCand"></div>
@@ -886,6 +938,19 @@
     <div class="battle-result" id="btResult" style="display:none"></div>
   </div>
   <div class="cut-hint" id="btHint" style="display:none">― TAP TO CLOSE ―</div>
+</div>
+
+<!-- ===== rune picker (E13) ===== -->
+<div class="modal-overlay" id="runeModal" role="dialog" aria-modal="true" aria-label="ルーン装備">
+  <div class="modal-panel">
+    <div class="modal-head"><b>RUNE 装備</b></div>
+    <div id="runeModalBody">
+      <div class="rune-target" id="runeTarget"></div>
+      <div class="rune-inv-lab">所持ルーン（タップで装備）</div>
+      <div class="rune-inv" id="runeInv"></div>
+      <div class="modal-actions"><button type="button" class="btn modal-cancel" id="runeClose"><span>閉じる</span></button></div>
+    </div>
+  </div>
 </div>
 
 <!-- ===== quest add/edit modal (S2-1) ===== -->
@@ -1053,8 +1118,11 @@
     const d = COMPANION_DEFS.find(x=>x.id===defId);
     if(!d) return null;
     const b = COMP_BATTLE[d.rarity] || COMP_BATTLE[3];
+    const m = levelMult(compLv(defId));               // E13: level scaling
+    const rb = runeBonus(defId);                       // E13: rune bonuses
+    const hp = Math.round(b.hp*m) + rb.HP;
     return {
-      name:d.name, hp:b.hp, maxHp:b.hp, atk:b.atk, spd:b.spd, element:d.element, side:"ally", rarity:d.rarity,
+      name:d.name, hp, maxHp:hp, atk:Math.round(b.atk*m)+rb.ATK, spd:b.spd+rb.SPD, element:d.element, side:"ally", rarity:d.rarity,
       skills:[{ label:`${d.role}の一撃`, power:b.skill.power, cooldown:b.skill.cooldown, cdLeft:b.skill.cooldown, element:d.element }]
     };
   }
@@ -1062,8 +1130,10 @@
   function mainUnit(){
     const st = mainCharStats();
     const techBonus = Math.round(equipped.reduce((s,n)=>s + skillTech(n).power, 0) / 4);
+    const rb = runeBonus("main");                      // E13: rune bonuses
     const techSkills = equipped.map(n=>{ const t = skillTech(n); return { label:t.name, power:t.power, cooldown:t.cooldown, cdLeft:0, element:t.element }; });
-    return { name:"自分（あなた）", hp:st.hp, maxHp:st.hp, atk:st.atk + techBonus, spd:st.spd, element:"無", side:"ally", main:true, skills:techSkills };
+    const hp = st.hp + rb.HP;
+    return { name:"自分（あなた）", hp, maxHp:hp, atk:st.atk + techBonus + rb.ATK, spd:st.spd + rb.SPD, element:"無", side:"ally", main:true, skills:techSkills };
   }
 
   // stages: enemy teams + first-clear crystal reward
@@ -1083,6 +1153,32 @@
       { name:"言い訳道化", hp:900, atk:120, spd:115, element:"風" },
     ]},
   ];
+
+  // ---------- E13: dungeon (time-log) / leveling / runes ----------
+  const DUNGEON_CONFIG = { stonePer:5, runePer:30, maxMinutes:600 };  // 1 stone / 5min, ~1 rune / 30min
+  const LEVEL_CONFIG = { cap:20, mult:0.08, costMul:3 };              // L->L+1 costs L*costMul stones; +8% stats per level
+  const RUNE_CONFIG = {
+    maxSlots:2,
+    types:{ HP:{min:200,max:600,label:"HP"}, ATK:{min:20,max:60,label:"ATK"}, SPD:{min:5,max:18,label:"SPD"} },
+  };
+  let stones = 0;            // 強化石
+  let runes = [];            // [{id,type,value,equippedTo:null|"main"|defId}]
+  const compLevel = {};      // { defId: level }
+  let _runeSeq = 0;
+  const compLv = id => compLevel[id] || 1;
+  const levelMult = lv => 1 + (lv-1)*LEVEL_CONFIG.mult;
+  function runeBonus(unitKey){
+    const b = { HP:0, ATK:0, SPD:0 };
+    runes.forEach(r=>{ if(r.equippedTo===unitKey) b[r.type] += r.value; });
+    return b;
+  }
+  function makeRune(){
+    const keys = Object.keys(RUNE_CONFIG.types);
+    const type = keys[Math.floor(Math.random()*keys.length)];
+    const t = RUNE_CONFIG.types[type];
+    const value = t.min + Math.floor(Math.random()*(t.max - t.min + 1));
+    return { id:"r"+(Date.now().toString(36))+(_runeSeq++), type, value, equippedTo:null };
+  }
 
   let LV = 7;
   let EXP = 0;
@@ -1139,6 +1235,7 @@
       owned: Object.assign({}, owned), pity5,
       equipped: equipped.slice(),
       team: team.slice(), clearedStages: Object.assign({}, clearedStages),
+      stones, runes: runes.slice(), compLevel: Object.assign({}, compLevel),
       fusedIds: fusedIds.slice(),
       streak, lastCompletionDate, lastSeenDate,
       skills: skills.slice(),
@@ -1213,6 +1310,22 @@
     if(s.clearedStages && typeof s.clearedStages === "object"){
       Object.keys(s.clearedStages).forEach(k=>{ if(s.clearedStages[k]) clearedStages[k] = true; });
     }
+    // E13: dungeon drops + leveling
+    stones = Number.isFinite(s.stones) ? s.stones : 0;
+    runes = [];
+    if(Array.isArray(s.runes)){
+      s.runes.forEach(r=>{
+        if(r && RUNE_CONFIG.types[r.type] && Number.isFinite(r.value)){
+          runes.push({ id:r.id || ("r"+(_runeSeq++)), type:r.type, value:r.value, equippedTo: r.equippedTo || null });
+        }
+      });
+    }
+    Object.keys(compLevel).forEach(k=>delete compLevel[k]);
+    if(s.compLevel && typeof s.compLevel === "object"){
+      Object.keys(s.compLevel).forEach(k=>{ const lv = Number(s.compLevel[k]); if(lv>=1) compLevel[k] = Math.min(LEVEL_CONFIG.cap, lv); });
+    }
+    // drop rune equips that point to companions no longer owned
+    runes.forEach(r=>{ if(r.equippedTo && r.equippedTo!=="main" && !owned[r.equippedTo]) r.equippedTo = null; });
     QUESTS = s.quests.map(q=>({
       id:q.id, kind:q.kind, title:q.title, exp:Number(q.exp)||0,
       boss:!!q.boss, skill:q.skill, mat:!!q.mat, habit:!!q.habit, done:!!q.done
@@ -1567,6 +1680,13 @@
       }
     }
     wrap.innerHTML = html;
+    // E13: main char rune slots
+    const rs = $("#mcRuneSlots");
+    if(rs){
+      $("#mcRuneCnt").textContent = `${equippedRunesOf("main").length}/${RUNE_CONFIG.maxSlots}`;
+      rs.innerHTML = runeSlotsHtml("main");
+      wireRuneSlots(rs);
+    }
   }
 
   // ---------- team logic (E9 / S9-2) ----------
@@ -1633,6 +1753,7 @@
   const rarOf = id => { const d = COMPANION_DEFS.find(x=>x.id===id); return d?d.rarity:3; };
   function renderBattle(){
     const slotsWrap = $("#teamSlots"); if(!slotsWrap) return;
+    renderDungeon(); renderTrain();
     // team slots: main (fixed) + companion slots
     let html = `<div class="team-slot main"><span class="ts-k">MAIN</span><span class="ts-nm">自分（あなた）</span><span class="ts-st">LV${LV} / HP${mainCharStats().hp}</span></div>`;
     for(let i=0;i<TEAM_COMPANION_SLOTS;i++){
@@ -1752,6 +1873,104 @@
   }
   function closeBattle(){ clearBtTimers(); btOv.classList.remove("show"); }
   btOv.addEventListener("click", ()=>{ if($("#btHint").style.display==="block") closeBattle(); });
+
+  // ---------- E13: dungeon / leveling / runes ----------
+  function explore(minutes){
+    minutes = Math.max(1, Math.min(DUNGEON_CONFIG.maxMinutes, Math.floor(minutes)||0));
+    const gainedStones = Math.max(1, Math.round(minutes / DUNGEON_CONFIG.stonePer));
+    let gainedRunes = Math.floor(minutes / DUNGEON_CONFIG.runePer);
+    if(Math.random() < (minutes % DUNGEON_CONFIG.runePer) / DUNGEON_CONFIG.runePer) gainedRunes++;
+    stones += gainedStones;
+    for(let i=0;i<gainedRunes;i++) runes.push(makeRune());
+    saveState();
+    renderDungeon(); renderTrain(); renderMainChar();
+    toast(`探索完了！ ◇${gainedStones}${gainedRunes?` ・ ⬡${gainedRunes}`:""} を獲得`);
+  }
+  function levelUpCost(lv){ return lv * LEVEL_CONFIG.costMul; }
+  function levelUpCompanion(defId){
+    const lv = compLv(defId);
+    if(lv >= LEVEL_CONFIG.cap){ toast("レベル上限に達している"); return; }
+    const cost = levelUpCost(lv);
+    if(stones < cost){ toast(`強化石が足りない（${cost}必要）`); return; }
+    stones -= cost;
+    compLevel[defId] = lv + 1;
+    saveState();
+    renderDungeon(); renderTrain();
+    toast(`${COMPANION_DEFS.find(d=>d.id===defId).name} が Lv${lv+1} に！`);
+  }
+  function equippedRunesOf(unitKey){ return runes.filter(r=>r.equippedTo===unitKey); }
+  function unequipRune(runeId){
+    const r = runes.find(x=>x.id===runeId); if(!r) return;
+    r.equippedTo = null;
+    saveState(); renderTrain(); renderMainChar(); renderRuneModal();
+  }
+  function equipRune(runeId, unitKey){
+    if(equippedRunesOf(unitKey).length >= RUNE_CONFIG.maxSlots){ toast("ルーンスロットが満杯（最大2）"); return; }
+    const r = runes.find(x=>x.id===runeId); if(!r || r.equippedTo) return;
+    r.equippedTo = unitKey;
+    saveState(); renderTrain(); renderMainChar(); renderRuneModal();
+  }
+
+  function renderDungeon(){
+    const sc = $("#stoneCnt"); if(!sc) return;
+    sc.textContent = stones;
+    $("#runeCnt").textContent = runes.length;
+  }
+
+  function runeSlotsHtml(unitKey){
+    const eq = equippedRunesOf(unitKey);
+    let html = "";
+    for(let i=0;i<RUNE_CONFIG.maxSlots;i++){
+      const r = eq[i];
+      if(r) html += `<button class="rune-slot filled" data-rune="${r.id}" type="button">⬡ ${r.type}+${r.value} <em>外す</em></button>`;
+      else  html += `<button class="rune-slot empty" data-unit="${esc(unitKey)}" type="button">＋ ルーン</button>`;
+    }
+    return html;
+  }
+  function wireRuneSlots(container){
+    container.querySelectorAll(".rune-slot.filled").forEach(b=> b.addEventListener("click", ()=>unequipRune(b.dataset.rune)));
+    container.querySelectorAll(".rune-slot.empty").forEach(b=> b.addEventListener("click", ()=>openRuneModal(b.dataset.unit)));
+  }
+
+  function renderTrain(){
+    const wrap = $("#trainList"); if(!wrap) return;
+    const ownedDefs = COMPANION_DEFS.filter(d=>owned[d.id]).sort((a,b)=>b.rarity-a.rarity);
+    if(ownedDefs.length===0){ wrap.innerHTML = `<div class="comp-empty">― お供がいない。GACHAで仲間を集めよう ―</div>`; return; }
+    wrap.innerHTML = ownedDefs.map(d=>{
+      const lv = compLv(d.id);
+      const b = COMP_BATTLE[d.rarity]; const m = levelMult(lv); const rb = runeBonus(d.id);
+      const hp = Math.round(b.hp*m)+rb.HP, atk = Math.round(b.atk*m)+rb.ATK;
+      const maxed = lv>=LEVEL_CONFIG.cap;
+      const cost = levelUpCost(lv);
+      return `<div class="train-card r${d.rarity}">
+        <div class="tr-top"><span class="tr-nm">${"★".repeat(d.rarity)} ${esc(d.name)}</span><span class="tr-lv">Lv${lv}</span></div>
+        <div class="tr-st">HP${hp} / ATK${atk} / SPD${b.spd+rb.SPD}</div>
+        <div class="tr-rune" data-unit="${d.id}">${runeSlotsHtml(d.id)}</div>
+        <button class="tr-up" data-id="${d.id}" type="button" ${maxed?"disabled":""}>${maxed?"MAX":`Lv UP（◇${cost}）`}</button>
+      </div>`;
+    }).join("");
+    wrap.querySelectorAll(".tr-up").forEach(b=> b.addEventListener("click", ()=>levelUpCompanion(b.dataset.id)));
+    wrap.querySelectorAll(".tr-rune").forEach(c=> wireRuneSlots(c));
+  }
+
+  // rune picker overlay
+  const runeModal = $("#runeModal");
+  let runeTargetUnit = null;
+  function openRuneModal(unitKey){ runeTargetUnit = unitKey; renderRuneModal(); runeModal.classList.add("show"); }
+  function closeRuneModal(){ runeModal.classList.remove("show"); runeTargetUnit = null; }
+  function unitLabel(unitKey){ if(unitKey==="main") return "自分（あなた）"; const d = COMPANION_DEFS.find(x=>x.id===unitKey); return d?d.name:unitKey; }
+  function renderRuneModal(){
+    if(!runeTargetUnit) return;
+    $("#runeTarget").textContent = `装備先: ${unitLabel(runeTargetUnit)}（${equippedRunesOf(runeTargetUnit).length}/${RUNE_CONFIG.maxSlots}）`;
+    const inv = runes.filter(r=>!r.equippedTo);
+    const box = $("#runeInv");
+    if(inv.length===0){ box.innerHTML = `<div class="comp-empty">― 装備できるルーンがない。ダンジョンで集めよう ―</div>`; return; }
+    box.innerHTML = inv.map(r=>`<button class="rune-pick t-${r.type}" data-rune="${r.id}" type="button">⬡ ${r.type} +${r.value}</button>`).join("");
+    box.querySelectorAll(".rune-pick").forEach(b=> b.addEventListener("click", ()=>equipRune(b.dataset.rune, runeTargetUnit)));
+  }
+  $("#exploreBtn").addEventListener("click", ()=>explore(parseInt($("#dgMin").value,10)));
+  $("#runeClose").addEventListener("click", closeRuneModal);
+  runeModal.addEventListener("click", e=>{ if(e.target===runeModal) closeRuneModal(); });
 
   function checkFuseReady(){
     const btn = $("#fuseBtn");
@@ -2020,6 +2239,7 @@
     streak=0; lastCompletionDate=null; lastSeenDate=todayStr();
     Object.keys(owned).forEach(k=>delete owned[k]); pity5=0; equipped=[];
     team=[null,null]; Object.keys(clearedStages).forEach(k=>delete clearedStages[k]);
+    stones=0; runes=[]; Object.keys(compLevel).forEach(k=>delete compLevel[k]);
     saveState();   // persist the cleared state so a reload stays reset
     renderQuests(); renderSkills(); checkFuseReady(); refreshBars(); updateStreakDisplay(); updateCrystalDisplay(); renderGacha(); renderBattle(); renderStatus();
     toast("クエストをリセットした");

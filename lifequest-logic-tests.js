@@ -304,6 +304,46 @@ section("battle phase2 (affinity & CT)");
   A(dmg(100, 0, 0.75) === 75, "basic dmg w/ disadvantage");
 }
 
+/* ============ 4g. 育成Phase3: ダンジョン/レベル/ルーン (E13) ============ */
+section("dungeon / leveling / runes");
+{
+  const DG = { stonePer: 5, runePer: 30, maxMinutes: 600 };
+  const stonesFor = m => { m = Math.max(1, Math.min(DG.maxMinutes, Math.floor(m) || 0)); return Math.max(1, Math.round(m / DG.stonePer)); };
+  const minRunes = m => Math.floor(Math.max(1, Math.min(DG.maxMinutes, m)) / DG.runePer);
+  A(stonesFor(30) === 6, "30min -> 6 stones");
+  A(stonesFor(0) === 1 && stonesFor(3) === 1, "min 1 stone");
+  A(stonesFor(9999) === Math.round(600 / 5), "minutes capped at 600");
+  A(minRunes(60) === 2 && minRunes(25) === 0, "guaranteed runes by 30min blocks");
+
+  // leveling
+  const LV = { cap: 20, mult: 0.08, costMul: 3 };
+  const levelMult = lv => 1 + (lv - 1) * LV.mult;
+  const cost = lv => lv * LV.costMul;
+  A(levelMult(1) === 1 && Math.abs(levelMult(6) - 1.4) < 1e-9, "level mult scales");
+  let stones = 10, lv = 1;
+  const up = () => { if (lv >= LV.cap) return false; const c = cost(lv); if (stones < c) return false; stones -= c; lv++; return true; };
+  A(up() === true && lv === 2 && stones === 7, "level 1->2 costs 3");
+  A(up() === true && lv === 3 && stones === 1, "level 2->3 costs 6");
+  A(up() === false && lv === 3, "not enough stones blocks level up");
+
+  // companion battle stat with level + rune
+  const base = { hp: 720, atk: 95, spd: 95 };
+  const runeBonus = { HP: 300, ATK: 0, SPD: 10 };
+  const hp = Math.round(base.hp * levelMult(3)) + runeBonus.HP;
+  A(hp === Math.round(720 * 1.16) + 300, "lvl+rune HP applied");
+
+  // rune equip cap + ownership cleanup
+  const MAX = 2;
+  let runes = [{ id: "a", equippedTo: null }, { id: "b", equippedTo: null }, { id: "c", equippedTo: null }];
+  const eqOf = key => runes.filter(r => r.equippedTo === key);
+  const equip = (id, key) => { if (eqOf(key).length >= MAX) return false; const r = runes.find(x => x.id === id); if (!r || r.equippedTo) return false; r.equippedTo = key; return true; };
+  A(equip("a", "c_x") && equip("b", "c_x"), "equip up to 2");
+  A(equip("c", "c_x") === false, "3rd rune rejected");
+  // cleanup: companion c_x no longer owned -> unequip
+  const owned = {}; runes.forEach(r => { if (r.equippedTo && r.equippedTo !== "main" && !owned[r.equippedTo]) r.equippedTo = null; });
+  A(runes.every(r => r.equippedTo === null), "runes freed when companion not owned");
+}
+
 /* ============ 5. HTMLエスケープ (S6-1) ============ */
 section("html escape");
 {
