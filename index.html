@@ -640,6 +640,10 @@
   .bunit.ally.main{border-color:var(--yellow);}
   .bunit.dead{opacity:.35;}
   .bu-nm{font-weight:900;font-size:11px;color:var(--white);}
+  .bu-el{display:inline-block;font-family:"Anton",sans-serif;font-style:italic;font-size:9px;color:var(--black);background:var(--white);padding:0 5px;margin-right:5px;}
+  .el-火{background:#ff5a3c;color:#fff;} .el-水{background:#00e5ff;color:#000;} .el-風{background:#7dff7d;color:#000;}
+  .el-土{background:#caa46a;color:#000;} .el-光{background:#ffd700;color:#000;} .el-闇{background:#a06bff;color:#fff;}
+  .affinity-hint{padding:6px 20px 8px;font-size:10px;color:var(--grey);font-weight:700;position:relative;z-index:2;}
   .bu-bar{height:8px;background:#222;margin-top:4px;border:1px solid var(--black);overflow:hidden;}
   .bu-fill{height:100%;background:var(--cyan);transition:width .25s linear;}
   .bunit.enemy .bu-fill{background:var(--magenta);}
@@ -812,6 +816,7 @@
     <div class="team-cand" id="teamCand"></div>
 
     <div class="sec-head" style="margin-top:20px;"><h2 style="font-size:18px;">STAGES</h2></div>
+    <div class="affinity-hint">属性相性 ▶ 火▶風▶土▶水▶火 ・ 光⇆闇（抜群1.5倍 / 不利0.75倍）</div>
     <div class="stage-list" id="stageList"></div>
   </main>
 
@@ -1029,40 +1034,53 @@
   let team = [null, null];            // companion def ids (or null) per slot
   const clearedStages = {};           // { stageId: true } -> first-clear reward already given
 
-  // companion battle stats derived from rarity (level fixed at 1 for Phase1)
+  // element affinity (E12): 4-cycle 火▶風▶土▶水▶火 + 光⇆闇 mutual
+  const ELEM_BEATS = { "火":"風", "風":"土", "土":"水", "水":"火", "光":"闇", "闇":"光" };
+  function elementMult(atk, def){
+    if(!atk || !def || atk==="無" || def==="無") return 1;
+    if(ELEM_BEATS[atk]===def) return 1.5;   // advantage
+    if(ELEM_BEATS[def]===atk) return 0.75;  // disadvantage
+    return 1;
+  }
+
+  // companion battle stats + a CT skill, derived from rarity
   const COMP_BATTLE = {
-    5: { hp:1400, atk:170, spd:115 },
-    4: { hp:1000, atk:130, spd:105 },
-    3: { hp:720,  atk:95,  spd:95  },
+    5: { hp:1400, atk:170, spd:115, skill:{ power:200, cooldown:3 } },
+    4: { hp:1000, atk:130, spd:105, skill:{ power:140, cooldown:3 } },
+    3: { hp:720,  atk:95,  spd:95,  skill:{ power:90,  cooldown:4 } },
   };
   function companionUnit(defId){
     const d = COMPANION_DEFS.find(x=>x.id===defId);
     if(!d) return null;
     const b = COMP_BATTLE[d.rarity] || COMP_BATTLE[3];
-    return { name:d.name, hp:b.hp, maxHp:b.hp, atk:b.atk, spd:b.spd, element:d.element, side:"ally", rarity:d.rarity };
+    return {
+      name:d.name, hp:b.hp, maxHp:b.hp, atk:b.atk, spd:b.spd, element:d.element, side:"ally", rarity:d.rarity,
+      skills:[{ label:`${d.role}の一撃`, power:b.skill.power, cooldown:b.skill.cooldown, cdLeft:b.skill.cooldown, element:d.element }]
+    };
   }
-  // main char as a battle unit; equipped techs add an attack bonus (reinforces the loop)
+  // main char as a battle unit; equipped techs become CT skills (E12) and add base-atk bonus
   function mainUnit(){
     const st = mainCharStats();
     const techBonus = Math.round(equipped.reduce((s,n)=>s + skillTech(n).power, 0) / 4);
-    return { name:"自分（あなた）", hp:st.hp, maxHp:st.hp, atk:st.atk + techBonus, spd:st.spd, element:"無", side:"ally", main:true };
+    const techSkills = equipped.map(n=>{ const t = skillTech(n); return { label:t.name, power:t.power, cooldown:t.cooldown, cdLeft:0, element:t.element }; });
+    return { name:"自分（あなた）", hp:st.hp, maxHp:st.hp, atk:st.atk + techBonus, spd:st.spd, element:"無", side:"ally", main:true, skills:techSkills };
   }
 
   // stages: enemy teams + first-clear crystal reward
   const STAGES = [
     { id:"s1", name:"STAGE 1 ・ 怠惰の沼", reward:30, enemies:[
-      { name:"スライム", hp:600, atk:70, spd:90 },
-      { name:"先延ばし鬼", hp:800, atk:90, spd:85 },
+      { name:"スライム", hp:600, atk:70, spd:90, element:"水" },
+      { name:"先延ばし鬼", hp:800, atk:90, spd:85, element:"土" },
     ]},
     { id:"s2", name:"STAGE 2 ・ 締切の谷", reward:60, enemies:[
-      { name:"未読の群れ", hp:700, atk:95, spd:100 },
-      { name:"締切ワーム", hp:1000, atk:110, spd:95 },
-      { name:"見ないふり", hp:700, atk:90, spd:88 },
+      { name:"未読の群れ", hp:700, atk:95, spd:100, element:"風" },
+      { name:"締切ワーム", hp:1000, atk:110, spd:95, element:"火" },
+      { name:"見ないふり", hp:700, atk:90, spd:88, element:"闇" },
     ]},
     { id:"s3", name:"STAGE 3 ・ 慢心の城", reward:120, enemies:[
-      { name:"油断ナイト", hp:1200, atk:130, spd:108 },
-      { name:"自堕落キング", hp:1800, atk:155, spd:100 },
-      { name:"言い訳道化", hp:900, atk:120, spd:115 },
+      { name:"油断ナイト", hp:1200, atk:130, spd:108, element:"光" },
+      { name:"自堕落キング", hp:1800, atk:155, spd:100, element:"闇" },
+      { name:"言い訳道化", hp:900, atk:120, spd:115, element:"風" },
     ]},
   ];
 
@@ -1566,7 +1584,7 @@
     return units;
   }
   function buildEnemyUnits(stage){
-    return stage.enemies.map(e=>({ name:e.name, hp:e.hp, maxHp:e.hp, atk:e.atk, spd:e.spd, element:e.element||"無", side:"enemy" }));
+    return stage.enemies.map(e=>({ name:e.name, hp:e.hp, maxHp:e.hp, atk:e.atk, spd:e.spd, element:e.element||"無", side:"enemy", skills:[] }));
   }
   const firstAlive = arr => arr.find(u=>u.hp>0) || null;
   // resolve a full auto battle; returns { win, log:[{txt,units}], rounds }
@@ -1574,7 +1592,8 @@
     const allies = buildPlayerUnits();
     const enemies = buildEnemyUnits(stage);
     const log = [];
-    const snapshot = txt => log.push({ txt, allies:allies.map(u=>({name:u.name,hp:Math.max(0,u.hp),maxHp:u.maxHp,side:"ally",main:u.main})), enemies:enemies.map(u=>({name:u.name,hp:Math.max(0,u.hp),maxHp:u.maxHp,side:"enemy"})) });
+    const mapUnits = arr => arr.map(u=>({ name:u.name, hp:Math.max(0,u.hp), maxHp:u.maxHp, side:u.side, main:u.main, el:u.element }));
+    const snapshot = txt => log.push({ txt, allies:mapUnits(allies), enemies:mapUnits(enemies) });
     snapshot("バトル開始！");
     const order = ()=> allies.concat(enemies).filter(u=>u.hp>0).sort((a,b)=> b.spd - a.spd || (Math.random()-0.5));
     let rounds = 0;
@@ -1586,9 +1605,21 @@
         const foes = u.side==="ally" ? enemies : allies;
         const target = firstAlive(foes);
         if(!target) break;
-        const dmg = Math.max(1, Math.round(u.atk * (0.85 + Math.random()*0.3)));
+        // pick the highest-power ready skill (E12 / CT); else basic attack
+        let skill = null;
+        if(u.skills && u.skills.length){
+          const ready = u.skills.filter(s=>s.cdLeft<=0).sort((a,b)=>b.power-a.power);
+          if(ready.length) skill = ready[0];
+        }
+        const atkEl = skill ? (skill.element || u.element) : u.element;
+        const mult = elementMult(atkEl, target.element);
+        let dmg = (u.atk + (skill ? skill.power : 0)) * (0.85 + Math.random()*0.3) * mult;
+        dmg = Math.max(1, Math.round(dmg));
         target.hp -= dmg;
-        snapshot(`${u.name} の攻撃！ ${target.name} に ${dmg} ダメージ`);
+        // update this unit's cooldowns
+        if(u.skills) u.skills.forEach(s=>{ if(s===skill) s.cdLeft = s.cooldown; else if(s.cdLeft>0) s.cdLeft--; });
+        const aff = mult>1 ? "（効果抜群！）" : mult<1 ? "（いまひとつ）" : "";
+        snapshot(`${u.name} の${skill ? (skill.label||skill.name) : "攻撃"}！ ${target.name} に ${dmg} ダメージ${aff}`);
         if(target.hp<=0) snapshot(`${target.name} を撃破！`);
         if(!allies.some(a=>a.hp>0) || !enemies.some(e=>e.hp>0)) break;
       }
@@ -1662,8 +1693,9 @@
   function clearBtTimers(){ btTimers.forEach(clearTimeout); btTimers = []; }
   function unitBarHtml(u){
     const pct = Math.max(0, Math.round(u.hp/u.maxHp*100));
+    const el = u.el && u.el!=="無" ? `<span class="bu-el el-${u.el}">${u.el}</span>` : "";
     return `<div class="bunit ${u.side}${u.main?" main":""}${u.hp<=0?" dead":""}">
-      <span class="bu-nm">${esc(u.name)}</span>
+      <span class="bu-nm">${el}${esc(u.name)}</span>
       <div class="bu-bar"><div class="bu-fill" style="width:${pct}%"></div></div>
     </div>`;
   }

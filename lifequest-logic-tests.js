@@ -276,6 +276,34 @@ section("team & battle");
   A(clear("s1") === false && crystals === 30, "repeat clear grants nothing");
 }
 
+/* ============ 4f. バトルPhase2: 属性相性 & CT (E12) ============ */
+section("battle phase2 (affinity & CT)");
+{
+  const ELEM_BEATS = { "火": "風", "風": "土", "土": "水", "水": "火", "光": "闇", "闇": "光" };
+  const mult = (a, d) => { if (!a || !d || a === "無" || d === "無") return 1; if (ELEM_BEATS[a] === d) return 1.5; if (ELEM_BEATS[d] === a) return 0.75; return 1; };
+  A(mult("火", "風") === 1.5, "火>風 advantage 1.5");
+  A(mult("風", "火") === 0.75, "風<火 disadvantage 0.75");
+  A(mult("土", "水") === 1.5 && mult("水", "火") === 1.5, "cycle continues");
+  A(mult("光", "闇") === 1.5 && mult("闇", "光") === 1.5, "光⇆闇 mutual advantage");
+  A(mult("火", "火") === 1 && mult("無", "水") === 1 && mult("火", "無") === 1, "same/neutral = 1.0");
+
+  // CT: skill ready -> used (cd set) -> blocked until cd elapses -> ready again
+  const skill = { power: 100, cooldown: 3, cdLeft: 0 };
+  const pick = skills => { const r = skills.filter(s => s.cdLeft <= 0).sort((a, b) => b.power - a.power); return r[0] || null; };
+  const tickAfterUse = (skills, used) => skills.forEach(s => { if (s === used) s.cdLeft = s.cooldown; else if (s.cdLeft > 0) s.cdLeft--; });
+  let used = pick([skill]); A(used === skill, "ready skill is picked");
+  tickAfterUse([skill], used);
+  A(skill.cdLeft === 3, "cd set after use");
+  A(pick([skill]) === null, "skill on cooldown -> basic attack");
+  tickAfterUse([skill], null); tickAfterUse([skill], null); tickAfterUse([skill], null);
+  A(skill.cdLeft === 0 && pick([skill]) === skill, "skill ready again after CT elapses");
+
+  // damage includes skill power and affinity
+  const dmg = (atk, skillPower, m) => Math.round((atk + skillPower) * m);
+  A(dmg(100, 100, 1.5) === 300, "skill dmg w/ advantage = (100+100)*1.5");
+  A(dmg(100, 0, 0.75) === 75, "basic dmg w/ disadvantage");
+}
+
 /* ============ 5. HTMLエスケープ (S6-1) ============ */
 section("html escape");
 {
