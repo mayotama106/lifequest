@@ -707,6 +707,14 @@
   .q-log:active{background:var(--yellow);color:var(--black);}
   .q-mins{font-family:"Anton",sans-serif;font-style:italic;font-size:10px;color:var(--cyan);}
   .quest.done .q-time{opacity:.7;}
+  /* explicit complete button / checkbox (E17) — card body is no longer tap-to-complete */
+  .quest{cursor:default;}
+  .check{cursor:pointer;}
+  .q-done-btn{cursor:pointer;border:none;background:var(--magenta);color:var(--white);
+    font-family:"Anton",sans-serif;font-style:italic;font-size:12px;padding:7px 12px;
+    box-shadow:2px 2px 0 var(--black);white-space:nowrap;margin-bottom:4px;}
+  .q-done-btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--black);}
+  .q-done-badge{font-family:"Anton",sans-serif;font-style:italic;font-size:11px;color:var(--magenta);white-space:nowrap;margin-bottom:4px;}
   /* quest tools row (toggle + drop inventory) */
   .quest-tools{display:flex;align-items:center;gap:10px;padding:6px 20px 0;position:relative;z-index:2;}
   .qt-btn{cursor:pointer;border:2px solid var(--grey);background:var(--black);color:#cfcfcf;
@@ -1487,8 +1495,12 @@
   function questCardHtml(q){
     const tagChips = (q.tags||[]).map(t=>`<span class="q-tag">${esc(t)}</span>`).join("");
     const total = q.minutes ? `<span class="q-mins">計${q.minutes}分</span>` : "";
+    // E17: completion is an explicit button (no accidental whole-card tap)
+    const completeBtn = q.done
+      ? `<span class="q-done-badge">完了済</span>`
+      : `<button class="q-done-btn" type="button">完了</button>`;
     return `
-      <div class="check"><div class="box"></div><div class="mark">✕</div></div>
+      <div class="check" role="button" tabindex="0" aria-label="${q.done?'完了済':'完了にする'}"><div class="box"></div><div class="mark">✕</div></div>
       <div class="q-main">
         <div class="q-kind">${esc(q.kind)}${tagChips}</div>
         <div class="q-title">${esc(q.title)}</div>
@@ -1501,16 +1513,24 @@
       </div>
       <div class="exp-tag">+${Number(q.exp)||0}<small> EXP</small></div>
       <div class="q-actions">
+        ${completeBtn}
         <button class="q-act edit" type="button" aria-label="編集">✎</button>
         <button class="q-act del" type="button" aria-label="削除">🗑</button>
       </div>`;
   }
   function wireQuestCard(el, q){
-    el.addEventListener("click", ()=>toggle(q.id));
-    el.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle(q.id);} });
+    // E17: only the explicit 完了 button and the diamond checkbox complete the quest —
+    // tapping the card body no longer does anything (prevents misfires)
+    const doneBtn = el.querySelector(".q-done-btn");
+    if(doneBtn) doneBtn.addEventListener("click", e=>{ e.stopPropagation(); toggle(q.id); });
+    const check = el.querySelector(".check");
+    if(check){
+      check.addEventListener("click", e=>{ e.stopPropagation(); toggle(q.id); });
+      check.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(q.id); } });
+    }
     el.querySelector(".q-act.edit").addEventListener("click", e=>{ e.stopPropagation(); openQuestModal(q); });
     el.querySelector(".q-act.del").addEventListener("click", e=>{ e.stopPropagation(); deleteQuest(q.id); });
-    // E16: per-quest time log -> drops (don't let these trigger completion)
+    // per-quest time log -> drops
     const min = el.querySelector(".q-min");
     const log = el.querySelector(".q-log");
     if(min){ ["click","keydown","mousedown"].forEach(ev=> min.addEventListener(ev, e=>e.stopPropagation())); }
@@ -1526,7 +1546,7 @@
       pending.forEach(q=>{
         const el = document.createElement("div");
         el.className = "quest pending" + (q.done?" done":"");
-        el.setAttribute("role","button"); el.setAttribute("tabindex","0"); el.dataset.id = q.id;
+        el.dataset.id = q.id;
         el.innerHTML = questCardHtml(q) + `<button class="approve-btn" type="button">承認</button>`;
         wireQuestCard(el, q);
         el.querySelector(".approve-btn").addEventListener("click", e=>{ e.stopPropagation(); approveQuest(q.id); });
@@ -1540,8 +1560,6 @@
     QUESTS.filter(q=>!q.pending && !(hideDone && q.done)).forEach(q=>{
       const el = document.createElement("div");
       el.className = "quest" + (q.boss?" boss":"") + (q.done?" done":"");
-      el.setAttribute("role","button"); el.setAttribute("tabindex","0");
-      el.setAttribute("aria-pressed", q.done?"true":"false");
       el.dataset.id = q.id;
       el.innerHTML = questCardHtml(q);
       wireQuestCard(el, q);
