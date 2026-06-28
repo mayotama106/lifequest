@@ -499,6 +499,64 @@
   .btn.modal-cancel{flex:0 0 38%;background:var(--white);color:var(--black);}
   .btn.modal-save{background:var(--magenta);color:var(--white);}
 
+  /* ---------- gacha (E8) ---------- */
+  .gacha-banner{padding:22px 20px 0;position:relative;z-index:2;}
+  .gb-title{font-family:"Anton",sans-serif;font-style:italic;font-size:30px;color:var(--white);transform:skewX(var(--skew));text-shadow:3px 3px 0 var(--black);}
+  .gb-sub{margin-top:8px;font-size:12px;color:var(--grey);font-weight:700;line-height:1.6;}
+  .gb-bal{margin-top:12px;display:inline-flex;align-items:center;gap:6px;background:var(--cyan);color:var(--black);font-family:"Anton",sans-serif;font-style:italic;font-size:15px;padding:5px 14px;transform:skewX(var(--skew));box-shadow:4px 4px 0 var(--black);}
+  .gb-bal .ico,.gb-bal b{display:inline-block;transform:skewX(var(--unskew));}
+  .gb-bal b{font-size:18px;}
+
+  .gacha-actions{display:flex;gap:12px;padding:18px 20px 0;position:relative;z-index:2;}
+  .gbtn{flex:1;cursor:pointer;border:none;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;
+    font-family:"Anton",sans-serif;font-style:italic;padding:16px 8px;transform:skewX(var(--skew));box-shadow:var(--shadow);
+    transition:transform .07s ease,box-shadow .07s ease,opacity .2s ease;}
+  .gbtn>*{transform:skewX(var(--unskew));}
+  .gbtn.single{background:var(--white);color:var(--black);}
+  .gbtn.multi{background:var(--yellow);color:var(--black);}
+  .gbtn .gl{font-size:16px;}
+  .gbtn .gc{font-size:13px;}
+  .gbtn .gn{font-size:9px;color:var(--magenta);}
+  .gbtn:active{transform:skewX(var(--skew)) translate(3px,3px);box-shadow:2px 2px 0 var(--black);}
+  .gbtn:disabled{background:#2a2a2a;color:#666;cursor:not-allowed;box-shadow:6px 6px 0 #000;}
+  .gbtn:disabled .gn,.gbtn:disabled .gc{color:#555;}
+  .gacha-rate{padding:10px 20px 0;font-size:10px;color:var(--grey);font-weight:700;position:relative;z-index:2;}
+  .gacha-rate b{color:var(--cyan);}
+
+  .comp-grid{padding:8px 20px 0;position:relative;z-index:2;display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .comp-empty{grid-column:1/-1;font-size:12px;color:var(--grey);font-weight:700;padding:6px 2px;}
+  .comp-card{position:relative;transform:skewX(var(--skew));background:#101010;border:2px solid var(--grey);box-shadow:5px 5px 0 var(--black);padding:12px 12px 10px;}
+  .comp-card.r4{border-color:var(--magenta);box-shadow:5px 5px 0 var(--magenta);}
+  .comp-card.r5{border-color:var(--yellow);box-shadow:5px 5px 0 var(--yellow);background:#141000;}
+  .comp-card>*{transform:skewX(var(--unskew));}
+  .comp-stars{font-family:"Anton",sans-serif;font-style:italic;font-size:12px;color:var(--grey);letter-spacing:1px;}
+  .comp-card.r4 .comp-stars{color:var(--magenta);}
+  .comp-card.r5 .comp-stars{color:var(--yellow);}
+  .comp-name{font-weight:900;font-size:15px;color:var(--white);line-height:1.2;margin:4px 0 6px;word-break:break-word;padding-right:30px;}
+  .comp-meta{font-family:"Anton",sans-serif;font-style:italic;font-size:10px;color:var(--cyan);}
+  .comp-count{position:absolute;top:8px;right:10px;transform:skewX(var(--unskew));font-family:"Anton",sans-serif;font-style:italic;font-size:13px;color:var(--white);background:var(--black);padding:1px 7px;box-shadow:2px 2px 0 var(--black);}
+
+  /* gacha result overlay */
+  .gacha-result{position:relative;z-index:5;width:90%;max-width:400px;display:grid;gap:10px;justify-items:center;}
+  .gacha-result.single{grid-template-columns:1fr;}
+  .gacha-result.multi{grid-template-columns:repeat(5,1fr);gap:8px;width:96%;}
+  .rcard{width:100%;background:var(--black);border:3px solid var(--grey);box-shadow:5px 5px 0 var(--black);
+    transform:scale(0) skewX(var(--skew));padding:14px 8px;text-align:center;animation:rpop .35s cubic-bezier(.2,1.5,.4,1) forwards;}
+  .gacha-result.single .rcard{padding:30px 16px;border-width:5px;}
+  .rcard.r4{border-color:var(--magenta);box-shadow:5px 5px 0 var(--magenta);}
+  .rcard.r5{border-color:var(--yellow);box-shadow:7px 7px 0 var(--yellow);background:#141000;}
+  .rcard>*{display:block;transform:skewX(var(--unskew));}
+  @keyframes rpop{to{transform:scale(1) skewX(var(--skew));}}
+  .rcard .rstars{font-family:"Anton",sans-serif;font-style:italic;color:var(--grey);font-size:13px;}
+  .rcard.r4 .rstars{color:var(--magenta);}
+  .rcard.r5 .rstars{color:var(--yellow);}
+  .gacha-result.single .rcard .rstars{font-size:20px;}
+  .rcard .rname{font-weight:900;color:var(--white);font-size:13px;margin-top:4px;line-height:1.15;word-break:break-word;}
+  .gacha-result.single .rcard .rname{font-size:26px;color:var(--yellow);margin-top:10px;}
+  .gacha-result.single .rcard.r3 .rname,.gacha-result.single .rcard.r4 .rname{color:var(--white);}
+  .rcard .rnew{display:inline-block;transform:skewX(var(--unskew));background:var(--magenta);color:var(--white);font-family:"Anton",sans-serif;font-style:italic;font-size:8px;padding:1px 5px;margin-top:5px;}
+  .gacha-result.single .rcard .rnew{font-size:12px;padding:2px 10px;margin-top:10px;}
+
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
   }
@@ -539,8 +597,9 @@
   </header>
 
   <nav class="tabbar" role="tablist" aria-label="画面切り替え">
-    <button class="tab active" id="tabQuestBtn" role="tab" aria-selected="true" type="button"><span>QUEST LOG</span></button>
+    <button class="tab active" id="tabQuestBtn" role="tab" aria-selected="true" type="button"><span>QUEST</span></button>
     <button class="tab" id="tabStatusBtn" role="tab" aria-selected="false" type="button"><span>STATUS</span></button>
+    <button class="tab" id="tabGachaBtn" role="tab" aria-selected="false" type="button"><span>GACHA</span></button>
   </nav>
 
   <main id="viewQuest" class="view active">
@@ -603,6 +662,30 @@
     </div>
   </main>
 
+  <main id="viewGacha" class="view">
+    <div class="gacha-banner">
+      <div class="gb-title">SUMMON</div>
+      <div class="gb-sub">クリスタルでお供を召喚する。現実の達成が、仲間になる。</div>
+      <div class="gb-bal">所持 <span class="ico">◆</span><b id="gachaBal">0</b></div>
+    </div>
+
+    <div class="gacha-actions">
+      <button class="gbtn single" id="pullOneBtn" type="button">
+        <span class="gl">単発 召喚</span><span class="gc">◆ 50</span>
+      </button>
+      <button class="gbtn multi" id="pullTenBtn" type="button">
+        <span class="gl">10連 召喚</span><span class="gc">◆ 450</span><span class="gn">★4以上 確定</span>
+      </button>
+    </div>
+    <div class="gacha-rate" id="gachaRate">排出率 ★5 3% / ★4 22% / ★3 75% ・ 天井 <b id="pityTxt">100</b>連で★5確定</div>
+
+    <div class="sec-head" style="margin-top:18px;">
+      <h2 style="font-size:18px;">COMPANIONS</h2>
+      <div class="cnt"><b><span id="ownedCnt">0</span> / <span id="totalCnt">0</span> 種</b></div>
+    </div>
+    <div class="comp-grid" id="compGrid"></div>
+  </main>
+
 </div>
 
 <!-- bottom dock -->
@@ -647,6 +730,14 @@
   </div>
   <div class="flash" id="flash"></div>
   <div class="cut-hint" id="fuseHint" style="display:none">― TAP TO CLOSE ―</div>
+</div>
+
+<!-- ===== gacha summon overlay (E8) ===== -->
+<div class="overlay" id="gachaOverlay" role="alertdialog" aria-label="召喚結果">
+  <div class="hexgrid"></div>
+  <div class="warntape t1"><div class="tt"><span>＜召喚＞ SUMMON ＜召喚＞ 仲間が応じた ＜召喚＞ SUMMON ＜召喚＞ 仲間が応じた ＜召喚＞</span></div></div>
+  <div class="gacha-result" id="gachaResult"></div>
+  <div class="cut-hint" id="gachaHint" style="display:none">― TAP TO CLOSE ―</div>
 </div>
 
 <!-- ===== quest add/edit modal (S2-1) ===== -->
@@ -728,6 +819,33 @@
   const CRYSTAL_CONFIG = { normal:5, boss:30, fusion:50, levelUp:20, streakDailyMult:2 };
   let crystals = 0;
 
+  // ---------- gacha (E8) ----------
+  // companion roster (master data). element/role are for the future battle layer.
+  const COMPANION_DEFS = [
+    // ★5
+    { id:"c_flare",  name:"業火の竜 フレアドラゴン", rarity:5, element:"火", role:"アタッカー" },
+    { id:"c_abyss",  name:"深淵の賢者 アビスセージ", rarity:5, element:"闇", role:"サポート" },
+    // ★4
+    { id:"c_iron",   name:"鋼鉄の守護者 アイアンガード", rarity:4, element:"水", role:"タンク" },
+    { id:"c_gale",   name:"疾風の狩人 ゲイルハンター", rarity:4, element:"風", role:"アタッカー" },
+    { id:"c_lumina", name:"聖光の癒し手 ルミナヒーラー", rarity:4, element:"光", role:"サポート" },
+    // ★3
+    { id:"c_sala",   name:"火トカゲ サラマ", rarity:3, element:"火", role:"アタッカー" },
+    { id:"c_aquo",   name:"水スライム アクオ", rarity:3, element:"水", role:"タンク" },
+    { id:"c_breeze", name:"風妖精 ブリーズ", rarity:3, element:"風", role:"サポート" },
+    { id:"c_clay",   name:"土ゴーレム クレイ", rarity:3, element:"土", role:"タンク" },
+    { id:"c_pixie",  name:"光蝶 ピクシー", rarity:3, element:"光", role:"サポート" },
+    { id:"c_nocto",  name:"闇コウモリ ノクト", rarity:3, element:"闇", role:"アタッカー" },
+  ];
+  const GACHA_CONFIG = {
+    costSingle:50, costTen:450,
+    rates:{ 5:3, 4:22, 3:75 },   // percentages
+    pity5:100,                    // ★5 guaranteed on this pull if none before
+    tenGuaranteeRarity:4,         // 10-pull guarantees at least one ★4+
+  };
+  const owned = {};   // { defId: count }
+  let pity5 = 0;      // pulls since last ★5
+
   let LV = 7;
   let EXP = 0;
   const skills = [];          // acquired skill names
@@ -780,6 +898,7 @@
     return {
       version: STATE_VERSION,
       LV, EXP, totalExpEarned, crystals,
+      owned: Object.assign({}, owned), pity5,
       fusedIds: fusedIds.slice(),
       streak, lastCompletionDate, lastSeenDate,
       skills: skills.slice(),
@@ -820,6 +939,11 @@
     EXP = Number.isFinite(s.EXP) ? s.EXP : 0;
     totalExpEarned = Number.isFinite(s.totalExpEarned) ? s.totalExpEarned : 0;
     crystals = Number.isFinite(s.crystals) ? s.crystals : 0;
+    Object.keys(owned).forEach(k=>delete owned[k]);
+    if(s.owned && typeof s.owned === "object"){
+      Object.keys(s.owned).forEach(k=>{ const n = Number(s.owned[k]); if(n>0) owned[k] = n; });
+    }
+    pity5 = Number.isFinite(s.pity5) ? s.pity5 : 0;
     fusedIds.length = 0;
     if(Array.isArray(s.fusedIds)) s.fusedIds.forEach(x=>{ if(typeof x==="string") fusedIds.push(x); });
     else if(s.fused) fusedIds.push(FUSE_RECIPES[0].result);   // migrate old boolean save
@@ -960,6 +1084,110 @@
     }
   }
 
+  // ---------- gacha logic (E8 / S8-1) ----------
+  const defsByRarity = r => COMPANION_DEFS.filter(d=>d.rarity===r);
+  function rollRarity(){
+    const roll = Math.random()*100;
+    if(roll < GACHA_CONFIG.rates[5]) return 5;
+    if(roll < GACHA_CONFIG.rates[5] + GACHA_CONFIG.rates[4]) return 4;
+    return 3;
+  }
+  function pickDefOfRarity(r){
+    const pool = defsByRarity(r);
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+  // one pull, honoring the ★5 pity counter. returns a COMPANION_DEF.
+  function pullOne(){
+    let rarity;
+    if(pity5 + 1 >= GACHA_CONFIG.pity5){ rarity = 5; }   // hard pity
+    else rarity = rollRarity();
+    if(rarity === 5) pity5 = 0; else pity5 += 1;
+    return pickDefOfRarity(rarity);
+  }
+  // pull n times; for n>=10 guarantee at least one >= tenGuaranteeRarity
+  function pullMany(n){
+    const results = [];
+    for(let i=0;i<n;i++) results.push(pullOne());
+    if(n >= 10 && !results.some(d=>d.rarity >= GACHA_CONFIG.tenGuaranteeRarity)){
+      // upgrade the last ★3 to a guaranteed ★4
+      const idx = results.map(d=>d.rarity).lastIndexOf(3);
+      if(idx >= 0) results[idx] = pickDefOfRarity(GACHA_CONFIG.tenGuaranteeRarity);
+    }
+    return results;
+  }
+  // records ownership, returns results annotated with isNew
+  function grantCompanions(defs){
+    return defs.map(d=>{
+      const isNew = !owned[d.id];
+      owned[d.id] = (owned[d.id]||0) + 1;
+      return { def:d, isNew };
+    });
+  }
+
+  // ---------- gacha UI (E8 / S8-2) ----------
+  const rarityClass = r => r===5 ? "r5" : r===4 ? "r4" : "r3";
+  function renderGacha(){
+    const bal = $("#gachaBal"); if(!bal) return;
+    bal.textContent = crystals;
+    $("#pityTxt").textContent = GACHA_CONFIG.pity5;
+    $("#totalCnt").textContent = COMPANION_DEFS.length;
+    $("#ownedCnt").textContent = Object.keys(owned).length;
+    $("#pullOneBtn").disabled = crystals < GACHA_CONFIG.costSingle;
+    $("#pullTenBtn").disabled = crystals < GACHA_CONFIG.costTen;
+    const grid = $("#compGrid");
+    const ownedDefs = COMPANION_DEFS.filter(d=>owned[d.id]).sort((a,b)=>b.rarity-a.rarity);
+    if(ownedDefs.length === 0){
+      grid.innerHTML = `<div class="comp-empty">― まだお供がいない。ガチャで仲間を集めよう ―</div>`;
+      return;
+    }
+    grid.innerHTML = ownedDefs.map(d=>{
+      const cnt = owned[d.id];
+      return `<div class="comp-card ${rarityClass(d.rarity)}">
+        ${cnt>1?`<span class="comp-count">×${cnt}</span>`:""}
+        <span class="comp-stars">${"★".repeat(d.rarity)}</span>
+        <span class="comp-name">${esc(d.name)}</span>
+        <span class="comp-meta">${esc(d.element)} / ${esc(d.role)}</span>
+      </div>`;
+    }).join("");
+  }
+
+  function showGachaResult(items){
+    const box = $("#gachaResult");
+    const multi = items.length > 1;
+    box.className = "gacha-result " + (multi ? "multi" : "single");
+    box.innerHTML = items.map((it,i)=>{
+      const d = it.def;
+      return `<div class="rcard ${rarityClass(d.rarity)}" style="animation-delay:${reduce?0:(i*0.1).toFixed(2)}s">
+        <span class="rstars">${"★".repeat(d.rarity)}</span>
+        <span class="rname">${esc(d.name)}</span>
+        ${it.isNew?'<span class="rnew">NEW</span>':""}
+      </div>`;
+    }).join("");
+    const ov = $("#gachaOverlay");
+    ov.classList.add("show");
+    $("#gachaHint").style.display = "none";
+    const wait = reduce ? 30 : (items.length*100 + 500);
+    setTimeout(()=>{ $("#gachaHint").style.display = "block"; }, wait);
+  }
+
+  function doPull(n){
+    if($("#gachaOverlay").classList.contains("show")) return;
+    const cost = n===1 ? GACHA_CONFIG.costSingle : GACHA_CONFIG.costTen;
+    if(crystals < cost){ toast("クリスタルが足りない"); return; }
+    crystals -= cost;
+    const items = grantCompanions(pullMany(n));
+    updateCrystalDisplay(true);
+    renderGacha();
+    saveState();
+    showGachaResult(items);
+  }
+
+  $("#pullOneBtn").addEventListener("click", ()=>doPull(1));
+  $("#pullTenBtn").addEventListener("click", ()=>doPull(10));
+  $("#gachaOverlay").addEventListener("click", ()=>{
+    if($("#gachaHint").style.display === "block") $("#gachaOverlay").classList.remove("show");
+  });
+
   // ---------- toggle quest ----------
   function toggle(id){
     const q = QUESTS.find(x=>x.id===id);
@@ -1069,22 +1297,21 @@
   }
 
   // ---------- tab navigation ----------
-  const viewQuest    = $("#viewQuest");
-  const viewStatus   = $("#viewStatus");
-  const tabQuestBtn  = $("#tabQuestBtn");
-  const tabStatusBtn = $("#tabStatusBtn");
+  const VIEWS = { quest:"#viewQuest", status:"#viewStatus", gacha:"#viewGacha" };
+  const TABS  = { quest:"#tabQuestBtn", status:"#tabStatusBtn", gacha:"#tabGachaBtn" };
   function showTab(name){
-    const isQuest = name === "quest";
-    viewQuest.classList.toggle("active", isQuest);
-    viewStatus.classList.toggle("active", !isQuest);
-    tabQuestBtn.classList.toggle("active", isQuest);
-    tabQuestBtn.setAttribute("aria-selected", String(isQuest));
-    tabStatusBtn.classList.toggle("active", !isQuest);
-    tabStatusBtn.setAttribute("aria-selected", String(!isQuest));
-    if(!isQuest) renderStatus();
+    Object.keys(VIEWS).forEach(k=>{
+      const active = k === name;
+      $(VIEWS[k]).classList.toggle("active", active);
+      $(TABS[k]).classList.toggle("active", active);
+      $(TABS[k]).setAttribute("aria-selected", String(active));
+    });
+    if(name === "status") renderStatus();
+    if(name === "gacha")  renderGacha();
   }
-  tabQuestBtn.addEventListener("click", ()=>showTab("quest"));
-  tabStatusBtn.addEventListener("click", ()=>showTab("status"));
+  $("#tabQuestBtn").addEventListener("click", ()=>showTab("quest"));
+  $("#tabStatusBtn").addEventListener("click", ()=>showTab("status"));
+  $("#tabGachaBtn").addEventListener("click", ()=>showTab("gacha"));
 
   // ---------- 5.1 cut-in ----------
   const cutOv = $("#cutOverlay");
@@ -1279,8 +1506,9 @@
     QUESTS = clone(DEFAULT_QUESTS);
     LV=7; EXP=0; totalExpEarned=0; crystals=0; skills.length=0; fusedIds.length=0; fusing=false;
     streak=0; lastCompletionDate=null; lastSeenDate=todayStr();
+    Object.keys(owned).forEach(k=>delete owned[k]); pity5=0;
     saveState();   // persist the cleared state so a reload stays reset
-    renderQuests(); renderSkills(); checkFuseReady(); refreshBars(); updateStreakDisplay(); updateCrystalDisplay(); renderStatus();
+    renderQuests(); renderSkills(); checkFuseReady(); refreshBars(); updateStreakDisplay(); updateCrystalDisplay(); renderGacha(); renderStatus();
     toast("クエストをリセットした");
   });
 
@@ -1294,6 +1522,7 @@
   refreshBars(false);
   updateStreakDisplay();
   updateCrystalDisplay();
+  renderGacha();
   renderStatus();
 })();
 </script>

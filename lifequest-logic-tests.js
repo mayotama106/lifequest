@@ -152,6 +152,52 @@ section("crystal economy");
   A(apply({}) === 0, "missing crystals -> 0 (legacy save)");
 }
 
+/* ============ 4c. ガチャ (E8 / S8-1) ============ */
+section("gacha");
+{
+  const DEFS = [
+    { id: "a5", rarity: 5 }, { id: "b5", rarity: 5 },
+    { id: "a4", rarity: 4 }, { id: "b4", rarity: 4 },
+    { id: "a3", rarity: 3 }, { id: "b3", rarity: 3 }, { id: "c3", rarity: 3 },
+  ];
+  const CFG = { rates: { 5: 3, 4: 22, 3: 75 }, pity5: 100, tenGuaranteeRarity: 4 };
+  const byR = r => DEFS.filter(d => d.rarity === r);
+  let pity5 = 0;
+  const owned = {};
+  const rollRarity = () => { const r = Math.random() * 100; if (r < CFG.rates[5]) return 5; if (r < CFG.rates[5] + CFG.rates[4]) return 4; return 3; };
+  const pick = r => byR(r)[Math.floor(Math.random() * byR(r).length)];
+  function pullOne() { let rar; if (pity5 + 1 >= CFG.pity5) rar = 5; else rar = rollRarity(); if (rar === 5) pity5 = 0; else pity5 += 1; return pick(rar); }
+  function pullMany(n) { const res = []; for (let i = 0; i < n; i++) res.push(pullOne()); if (n >= 10 && !res.some(d => d.rarity >= CFG.tenGuaranteeRarity)) { const i = res.map(d => d.rarity).lastIndexOf(3); if (i >= 0) res[i] = pick(CFG.tenGuaranteeRarity); } return res; }
+  function grant(defs) { return defs.map(d => { const isNew = !owned[d.id]; owned[d.id] = (owned[d.id] || 0) + 1; return { def: d, isNew }; }); }
+
+  // rates: over many pulls, every result is a valid rarity and pulls a valid def
+  let ok = true; for (let i = 0; i < 2000; i++) { const d = pullOne(); if (![3, 4, 5].includes(d.rarity) || !DEFS.find(x => x.id === d.id)) ok = false; }
+  A(ok, "every pull returns a valid def of rarity 3/4/5");
+
+  // pity: 99 non-5 pulls then the 100th is forced ★5
+  pity5 = 0;
+  let lastNon5 = null;
+  // force a worst case by setting pity5 to 99 directly and pulling
+  pity5 = 99;
+  const forced = pullOne();
+  A(forced.rarity === 5, "hard pity forces ★5 at the cap");
+  A(pity5 === 0, "pity counter resets after ★5");
+
+  // 10-pull guarantee: run several 10-pulls, each must contain >=1 of rarity>=4
+  let allGuaranteed = true;
+  for (let t = 0; t < 200; t++) { pity5 = 0; const r = pullMany(10); if (!r.some(d => d.rarity >= 4)) allGuaranteed = false; }
+  A(allGuaranteed, "10-pull always yields at least one ★4+");
+
+  // dupes + isNew
+  const g1 = grant([DEFS[0]]); A(g1[0].isNew === true && owned.a5 === 1, "first copy is NEW, count 1");
+  const g2 = grant([DEFS[0]]); A(g2[0].isNew === false && owned.a5 === 2, "dupe not NEW, count 2");
+
+  // persistence round-trip of owned map
+  const applyOwned = s => { const o = {}; if (s.owned) Object.keys(s.owned).forEach(k => { const n = Number(s.owned[k]); if (n > 0) o[k] = n; }); return o; };
+  A(JSON.stringify(applyOwned({ owned: { a5: 2, a3: 1 } })) === JSON.stringify({ a5: 2, a3: 1 }), "owned map persists");
+  A(Object.keys(applyOwned({})).length === 0, "missing owned -> empty (legacy save)");
+}
+
 /* ============ 5. HTMLエスケープ (S6-1) ============ */
 section("html escape");
 {
